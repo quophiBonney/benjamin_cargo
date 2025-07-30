@@ -17,8 +17,8 @@
   <div class="bg-orange-500 bg-[url('/assets/map-bg.png')] bg-cover bg-center bg-no-repeat text-white py-20 px-6 md:px-16">
     <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-10 max-w-7xl mx-auto mt-24 md:mt-0">
       <div>
-        <h1 class="text-4xl md:text-5xl font-bold uppercase mb-4">Benjamin Cargo & Logistics</h1>
-        <p class="text-white/90 text-sm md:text-base leading-relaxed max-w-xl">
+        <h1 class="text-2xl md:text-5xl font-bold uppercase mb-4">Benjamin Cargo & Logistics</h1>
+        <p class="text-white/90 text-base max-w-xl">
           Fast, reliable cargo shipping and logistics. Choose your port, fill in the cargo info, and get your transport fee instantly.
         </p>
       </div>
@@ -120,7 +120,7 @@
                   alert('Please fill in all fields correctly!');
                 }
               "
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm py-2 rounded transition duration-300"
+              class="w-full bg-blue-700 hover:bg-blue-700 text-white font-semibold text-sm py-2 rounded transition duration-300"
             >
               🔍 Query Transport Fee
             </button>

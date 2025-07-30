@@ -3,15 +3,12 @@
 include_once './admin/includes/dbconnection.php';
 header('Content-Type: text/html; charset=utf-8');
 ?>
-<div class="w-full tracking-hero-bg h-full flex flex-col justify-center bg-blue-800">
-    <div class="px-4 md:px-16 mt-32 lg:max-w-3xl space-y-3 text-white">
-      
-      <h1 class="text-3xl md:text-5xl font-bold uppercase">Track Your Package</h1>
-      
+<div class="w-full tracking-hero-bg h-full flex flex-col justify-center items-center">
+    <div class="px-5 md:px-16 mt-40 md:mt-48 lg:max-w-5xl space-y-3 text-white text-center mb-10">
+      <h1 class="text-2xl md:text-5xl font-bold uppercase">Track Your Package</h1>
       <p class="text-sm md:text-md lg:text-lg">
         The seamless way to track your package and stay updated on its status. Just enter your tracking number and there you go.
       </p>
-      
 <form id="tracking-form" class="w-full">
   <div class="w-full bg-white rounded-md p-1.5 flex items-center gap-2 border border-gray-200 shadow-md">
     <input 
@@ -24,7 +21,7 @@ header('Content-Type: text/html; charset=utf-8');
     />
     <button 
       type="submit"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md transition-all"
+      class="bg-blue-900 hover:bg-blue-800 text-white px-5 py-2 rounded-md transition-all"
     >
       Track
     </button>
