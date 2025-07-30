@@ -1,0 +1,45 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: "Inter", sans-serif;
+}
+p,
+li,
+a,
+.dropdown-text,
+label,
+button {
+  font-size: 0.85rem !important;
+}
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out forwards;
+}
+.dropzone {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+.login-form-bg {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../assets/download.jpeg");
+  background-size: cover;
+  background-attachment: fixed;
+}
+.ts-dropdown {
+  z-index: 50 !important;
+}
