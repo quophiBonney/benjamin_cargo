@@ -26,7 +26,7 @@
 
       <!-- Hamburger (Mobile) -->
       <div class="md:hidden">
-        <button @click="open = !open" class="text-gray-700 focus:outline-none">
+        <button @click="open = !open" class="bg-indigo-900 text-white p-2 rounded focus:outline-none">
           <svg x-show="!open" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
             viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -42,7 +42,7 @@
     </nav>
 
     <!-- Mobile Menu Dropdown -->
-    <div x-show="open" x-transition class="md:hidden mt-2 bg-white/90 backdrop-blur-md rounded-lg shadow-md text-gray-800 px-4 py-3 space-y-2">
+    <div x-show="open" x-transition class="md:hidden mt-2 rounded bg-white w-full text-black px-4 py-3 space-y-3">
       <a href="index.php" class="block hover:text-blue-700 transition duration-300">Home</a>
       <a href="tracking.php" class="block hover:text-blue-700 transition duration-300">Logistics Query</a>
       <a href="#" class="block hover:text-blue-700 transition duration-300">I Need Cargo</a>

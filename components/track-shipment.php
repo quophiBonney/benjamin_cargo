@@ -1,6 +1,5 @@
 <?php
 include_once '../admin/includes/dbconnection.php';
-
 header('Content-Type: application/json');
 
 $tracking_number = $_POST['tracking_number'] ?? '';

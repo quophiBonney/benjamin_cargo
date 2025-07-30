@@ -68,6 +68,7 @@ Print
             <th class="py-3 px-4">Weight</th>
             <th class="py-3 px-4">Height</th>
             <th class="py-3 px-4">Length</th>
+            <th class="py-3 px-4">Status</th>
             <th class="py-3 px-4 no-print">Actions</th>
           </tr>
         </thead>
@@ -83,12 +84,12 @@ Print
             <!-- <td class="py-2 px-4"><?= htmlspecialchars($employee['package_length']) ?></td> -->
             <td class="py-2 px-4"><?= htmlspecialchars($employee['package_height']) ?></td>
             <td class="py-2 px-4"><?= htmlspecialchars($employee['package_quantity']) ?></td>
+             <td class="py-2 px-4"><?= htmlspecialchars($employee['status']) ?></td>
             <td class="py-2 flex gap-1 px-4 space-x-1 no-print">
               <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 hover:cursor-pointer transition edit-btn" data-employee='<?= json_encode($employee) ?>'><i class="fas fa-edit"></i></button>
               <!-- View Button -->
                <button class="hover:cursor-pointer bg-green-500 text-white p-2 rounded hover:bg-green-600 transition delete-btn" data-id="<?= $employee['id']; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button>
                <!-- Track History Button -->
-                <!-- Track History Button -->
 <button class="hover:cursor-pointer bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition track-btn"
   data-shipment='<?= json_encode($employee, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
   <i class="fa-solid fa-truck-fast"></i>

@@ -12,26 +12,18 @@ if (!$id || !$location || !$status) {
     exit;
 }
 
-// Check if tracking already exists
-$stmt = $dbh->prepare("SELECT id FROM tracking_history WHERE shipment_id = :id");
-$stmt->bindParam(':id', $id, PDO::PARAM_INT);
-$stmt->execute();
-$existing = $stmt->fetch(PDO::FETCH_ASSOC);
+// Always insert a new tracking history entry
+$insert = $dbh->prepare("
+    INSERT INTO tracking_history (shipment_id, location, description, status, date_time)
+    VALUES (:id, :location, :description, :status, NOW())
+");
 
-if ($existing) {
-    // Update
-    $update = $dbh->prepare("UPDATE tracking_history SET location = :location, description = :description, status = :status, date_time = NOW() WHERE shipment_id = :id");
-} else {
-    // Insert
-    $update = $dbh->prepare("INSERT INTO tracking_history (shipment_id, location, description, status, date_time) VALUES (:id, :location, :description, :status, NOW())");
-}
+$insert->bindParam(':id', $id, PDO::PARAM_INT);
+$insert->bindParam(':location', $location);
+$insert->bindParam(':description', $description);
+$insert->bindParam(':status', $status);
 
-$update->bindParam(':id', $id, PDO::PARAM_INT);
-$update->bindParam(':location', $location);
-$update->bindParam(':description', $description);
-$update->bindParam(':status', $status);
-
-if ($update->execute()) {
+if ($insert->execute()) {
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Database operation failed']);
