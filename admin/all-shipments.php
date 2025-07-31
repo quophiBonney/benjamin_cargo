@@ -239,7 +239,7 @@ Print
     <button onclick="closeTrackModal()" class="mt-3 absolute bg-red-500 w-8 h-8 rounded text-white top-2 right-2 hover:cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
     <h2 class="text-xl font-bold mb-4">Update History</h2>
     <form id="editTrackingHistoryForm">
-    <input type="hidden" id="trackingId" name="id">
+    <input type="hidden" id="trackingId" name="shipment_id">
       <div class="grid grid-cols-1 gap-5">
       <div>
         <label for="location" class="block text-gray-700">Location</label>
@@ -340,38 +340,42 @@ document.querySelectorAll('.edit-btn').forEach(button => {
   // Tracking Modal
   window.openTrackingModal = function (shipment) {
     document.getElementById('editTrackingModal').classList.remove('hidden');
-    document.getElementById('trackingId').value = shipment.shipment_id;
-    document.getElementById('location').value = shipment.location;
-    document.getElementById('description').value = shipment.description;
-    document.getElementById('status').value = shipment.status;
+     document.getElementById('trackingId').value = shipment.shipment_id;
+  document.getElementById('location').value = shipment.location || '';
+  document.getElementById('description').value = shipment.description || '';
+  document.getElementById('status').value = shipment.status || '';
   }
 
   window.closeTrackModal = function () {
     document.getElementById('editTrackingModal').classList.add('hidden');
   }
 
-  document.querySelectorAll('.track-btn').forEach(button => {
-    button.addEventListener('click', async function () {
-      const shipment = JSON.parse(this.dataset.shipment);
-      try {
-        const response = await fetch('./functions/shipment/fetch-tracking-history.php?id=' + encodeURIComponent(shipment.shipment_id));
-        const data = await response.json();
-
-        if (data.success && data.tracking) {
-          window.openTrackingModal({
-            shipment_id: shipment.shipment_id,
-            location: data.tracking.location || '',
-            description: data.tracking.description || '',
-            status: data.tracking.status || ''
-          });
-        } else {
-          Swal.fire('Error', 'No tracking history found for this shipment.', 'warning');
-        }
-      } catch (error) {
-        Swal.fire('Error', 'Failed to fetch tracking history.', 'error');
-      }
+ document.querySelectorAll('.track-btn').forEach(button => {
+  button.addEventListener('click', async function () {
+    const shipment = JSON.parse(this.dataset.shipment);
+    // Always open the modal with shipment ID
+    window.openTrackingModal({
+      shipment_id: shipment.shipment_id,
+      location: '',
+      description: '',
+      status: ''
     });
+    
+    try {
+      const response = await fetch('./functions/shipment/fetch-tracking-history.php?id=' + encodeURIComponent(shipment.shipment_id));
+      const data = await response.json();
+
+      if (data.success && data.tracking) {
+        // Update modal with fetched data
+        document.getElementById('location').value = data.tracking.location || '';
+        document.getElementById('description').value = data.tracking.description || '';
+        document.getElementById('status').value = data.tracking.status || '';
+      }
+    } catch (error) {
+      console.log('No existing tracking history');
+    }
   });
+});
 
   // Submit tracking form
   document.getElementById('editTrackingHistoryForm').addEventListener('submit', async function (event) {

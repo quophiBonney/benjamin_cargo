@@ -51,7 +51,7 @@ try {
             'success' => true,
             'message' => 'Login successful!',
             'role' => $_SESSION['role'],
-            'redirect' => in_array($_SESSION['role'], ['admin', 'manager']) ? 'dashboard.php' : 'staffs-dashboard.php'
+            'redirect' => in_array($_SESSION['role'], ['admin', 'manager']) ? 'all-shipments.php' : 'staffs-dashboard.php'
         ]);
     } else {
         echo json_encode([

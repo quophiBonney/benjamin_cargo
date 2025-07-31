@@ -2,39 +2,39 @@
 header('Content-Type: application/json');
 include_once '../../includes/dbconnection.php';
 
-$id = $_POST['id'] ?? null;
+// Get shipment ID from POST data
+$shipment_id = $_POST['shipment_id'] ?? null;
 $location = trim($_POST['location'] ?? '');
 $description = trim($_POST['description'] ?? '');
 $status = trim($_POST['status'] ?? '');
 
-if (!$id || !$location || !$status) {
-    echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
+if (!$shipment_id || !$location || !$status) {
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Shipment ID, location and status are required'
+    ]);
     exit;
 }
 
-// Insert into tracking_history
+// Always insert a new tracking history entry
 $insert = $dbh->prepare("
     INSERT INTO tracking_history (shipment_id, location, description, status, date_time)
-    VALUES (:id, :location, :description, :status, NOW())
+    VALUES (:shipment_id, :location, :description, :status, NOW())
 ");
 
-$insert->bindParam(':id', $id, PDO::PARAM_INT);
+$insert->bindParam(':shipment_id', $shipment_id, PDO::PARAM_INT);
 $insert->bindParam(':location', $location);
 $insert->bindParam(':description', $description);
 $insert->bindParam(':status', $status);
 
 if ($insert->execute()) {
-    // ✅ Update shipment status in the shipments table
-    $update = $dbh->prepare("
-        UPDATE shipments 
-        SET status = :status 
-        WHERE shipment_id = :id
-    ");
-    $update->bindParam(':status', $status);
-    $update->bindParam(':id', $id, PDO::PARAM_INT);
-    $update->execute();
-
-    echo json_encode(['success' => true]);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Tracking history updated successfully'
+    ]);
 } else {
-    echo json_encode(['success' => false, 'message' => 'Database operation failed']);
+    echo json_encode([
+        'success' => false, 
+        'message' => 'Database operation failed: ' . implode(' ', $insert->errorInfo())
+    ]);
 }
