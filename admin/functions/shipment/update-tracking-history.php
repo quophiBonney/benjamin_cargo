@@ -12,7 +12,7 @@ if (!$id || !$location || !$status) {
     exit;
 }
 
-// Always insert a new tracking history entry
+// Insert into tracking_history
 $insert = $dbh->prepare("
     INSERT INTO tracking_history (shipment_id, location, description, status, date_time)
     VALUES (:id, :location, :description, :status, NOW())
@@ -24,6 +24,16 @@ $insert->bindParam(':description', $description);
 $insert->bindParam(':status', $status);
 
 if ($insert->execute()) {
+    // ✅ Update shipment status in the shipments table
+    $update = $dbh->prepare("
+        UPDATE shipments 
+        SET status = :status 
+        WHERE shipment_id = :id
+    ");
+    $update->bindParam(':status', $status);
+    $update->bindParam(':id', $id, PDO::PARAM_INT);
+    $update->execute();
+
     echo json_encode(['success' => true]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Database operation failed']);

@@ -25,9 +25,7 @@ try {
         $package_description = trim($_POST['package_description'] ?? '');
         $package_quantity = trim($_POST['package_quantity'] ?? '');
         $package_payment_method = trim($_POST['package_payment_method'] ?? '');
-        $package_departure_info = trim($_POST['package_departure_info'] ?? '');
         $package_pickup_date = trim($_POST['package_pickup_date'] ?? '');
-        $package_pickup_time = trim($_POST['package_pickup_time'] ?? '');
         $package_expected_delivery_date = trim($_POST['package_expected_delivery_date'] ?? '');
         $package_carrier = trim($_POST['carrier'] ?? '');
         $package_type_of_shipment = trim($_POST['package_type_of_shipment'] ?? '');
@@ -52,21 +50,41 @@ try {
 
         // Insert shipment
         $sql = "INSERT INTO shipments (
-            tracking_number, sender_name, sender_city, sender_country,
-            receiver_name, receiver_city, receiver_country, receiver_phone,
-            package_name, package_weight, package_len, package_height,
-            package_description, package_quantity, package_payment_method,
-            package_departure_info, package_pickup_date, package_pickup_time,
+            tracking_number, 
+            sender_name, 
+            sender_city, 
+            sender_country,
+            receiver_name, 
+            receiver_city, 
+            receiver_country, 
+            receiver_phone,
+            package_name, 
+            package_weight, 
+            package_len, 
+            package_height,
+            package_description, 
+            package_quantity, package_payment_method,
+            package_pickup_date,
             package_expected_delivery_date, package_carrier, package_type_of_shipment,
-            origin, destination
+            origin, 
+            destination
         ) VALUES (
-            :tracking_number, :sender_name, :sender_city, :sender_country,
-            :receiver_name, :receiver_city, :receiver_country, :receiver_phone,
-            :package_name, :package_weight, :package_len, :package_height,
-            :package_description, :package_quantity, :package_payment_method,
-            :package_departure_info, :package_pickup_date, :package_pickup_time,
+            :tracking_number, 
+            :sender_name, 
+            :sender_city, 
+            :sender_country,
+            :receiver_name, 
+            :receiver_city, 
+            :receiver_country, 
+            :receiver_phone,
+            :package_name, 
+            :package_weight, 
+            :package_len, 
+            :package_height,
+            :package_description, :package_quantity, :package_payment_method,:package_pickup_date,
             :package_expected_delivery_date, :package_carrier, :package_type_of_shipment,
-            :origin, :destination
+            :origin, 
+            :destination
         )";
 
         $stmt = $dbh->prepare($sql);
@@ -86,9 +104,7 @@ try {
             ':package_description' => $package_description,
             ':package_quantity' => $package_quantity,
             ':package_payment_method' => $package_payment_method,
-            ':package_departure_info' => $package_departure_info,
             ':package_pickup_date' => $package_pickup_date,
-            ':package_pickup_time' => $package_pickup_time,
             ':package_expected_delivery_date' => $package_expected_delivery_date,
             ':package_carrier' => $package_carrier,
             ':package_type_of_shipment' => $package_type_of_shipment,

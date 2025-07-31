@@ -7,7 +7,7 @@ if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
     exit;
 }
 include_once 'includes/dbconnection.php';
-$query = "SELECT * FROM shipments ORDER BY id ASC";
+$query = "SELECT * FROM shipments ORDER BY shipment_id ASC";
 $stmt = $dbh->prepare($query);
 $stmt->execute();
 $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +61,6 @@ Print
         <thead class="bg-gray-700 text-white uppercase text-xs font-semibold border-b border-gray-300">
           <tr>
              <th class="py-3 px-4">Tracking No.</th>
-            <th class="py-3 px-4 min-w-[150px]">Sender Name</th>
             <th class="py-3 px-4 min-w-[150px]">Receiver Name</th>
             <th class="py-3 px-4 min-w-[150px]">Receiver Phone</th>
             <th class="py-3 px-4">Package</th>
@@ -76,7 +75,6 @@ Print
           <?php foreach ($employees as $employee): ?>
           <tr class="even:bg-gray-50 hover:bg-gray-100 transition duration-200">
              <td class="py-2 px-4"><?= htmlspecialchars($employee['tracking_number']) ?></td>
-            <td class="py-2 px-4"><?= htmlspecialchars($employee['sender_name']) ?></td>
             <td class="py-2 px-4"><?= htmlspecialchars($employee['receiver_name']) ?></td>
             <td class="py-2 px-4"><?= htmlspecialchars($employee['receiver_phone']) ?></td>
             <td class="py-2 px-4"><?= htmlspecialchars($employee['package_name']) ?></td>
@@ -88,15 +86,15 @@ Print
             <td class="py-2 flex gap-1 px-4 space-x-1 no-print">
               <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 hover:cursor-pointer transition edit-btn" data-employee='<?= json_encode($employee) ?>'><i class="fas fa-edit"></i></button>
               <!-- View Button -->
-               <button class="hover:cursor-pointer bg-green-500 text-white p-2 rounded hover:bg-green-600 transition delete-btn" data-id="<?= $employee['id']; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button>
+               <button class="hover:cursor-pointer bg-green-500 text-white p-2 rounded hover:bg-green-600 transition delete-btn" data-id="<?= $employee['shipment_id']; ?>"><i class="fa fa-eye" aria-hidden="true"></i></button>
+                <a href="fpdf/shipment-invoice.php?id=<?= $employee['shipment_id'] ?>" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"><i class="fa-solid fa-file-invoice"></i></a>
                <!-- Track History Button -->
 <button class="hover:cursor-pointer bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition track-btn"
-  data-shipment='<?= json_encode($employee, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
-  <i class="fa-solid fa-truck-fast"></i>
+    data-shipment='<?= json_encode($employee, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
+    <i class="fa-solid fa-truck-fast"></i>
 </button>
-
                <!-- Delete Button -->
-              <button class="hover:cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600 transition delete-btn" data-id="<?= $employee['id']; ?>"><i class="fa fa-trash" aria-hidden="true"></i></button>
+              <button class="hover:cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600 transition delete-btn" data-id="<?= $employee['shipment_id']; ?>"><i class="fa fa-trash" aria-hidden="true"></i></button>
             </td>
           </tr>
           <?php endforeach; ?>
@@ -111,82 +109,131 @@ Print
   <?php endif; ?>
 <!-- Edit Modal -->
 <div id="editModal" class="fixed inset-0 hidden z-50 bg-gray-400/10 backdrop-blur-md bg-opacity-20 flex items-center justify-center">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative max-h-screen overflow-y-auto">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-7xl relative max-h-screen overflow-y-auto">
     <button onclick="closeModal()" class="mt-3 absolute bg-red-500 w-8 h-8 rounded text-white top-2 right-2 hover:cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-    <h2 class="text-xl font-bold mb-4">Employee Update</h2>
-    <form id="editemployeeForm">
-    <input type="hidden" id="editemployeeId" name="id">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div>
-        <label for="fullName" class="block text-gray-700">Full Name</label>
-        <input type="text" id="fullName" name="fullName" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Enter full name" value="">
-      </div>
-      <div>
-        <label for="position" class="block text-gray-700">Position</label>
-        <input type="text" id="position" name="position" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Enter position" value="">
-      </div>
-        <div>
-        <label for="dob" class="block text-gray-700">Date Of Birth</label>
-        <input type="date" id="dob" name="dob" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" value="">
-      </div>
-        <div>
-          <label for="role" class="block text-gray-700">Role</label>
-         <select id="role" name="role" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-              <option value="" selected disabled>Select Position</option>
-            <option value="">Admin</option>
-            <option value="manager">Manager</option>
-            <option value="hr">HR</option>
-            <option value="receptionist">Receptionist</option>
-            <option value="cleaner">Cleaner</option>
-            <option value="staff">Staff</option>
-          </select>
-        </div>
-        <div>
-          <label for="email" class="block text-gray-700">Email Address</label>
-          <input type="email" id="email" name="email" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-        </div>
-          <div>
-          <label for="password" class="block text-gray-700">Password</label>
-          <input type="password" id="password" name="password" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Enter password">
-        </div>
-        <div>
-          <label for="phoneNumber" class="block text-gray-700">Phone Number</label>
-          <input type="text" id="phoneNumber" name="phoneNumber" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-        </div>
-        <div>
-          <label for="hire_date" class="block text-gray-700">Date Hired</label>
-          <input type="date" id="hiredDate" name="hiredDate" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-        </div>
-        <div>
-        <label for="residentialAddress" class="block text-gray-700">Residential Address</label>
-        <input type="text" id="residentialAddress" name="residentialAddress" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Enter residential address" value="">
-      </div>
-      <div>
-        <label for="ghanaCardNumber" class="block text-gray-700">Ghana Card Number</label>
-        <input type="text" id="ghanaCardNumber" name="ghanaCardNumber" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Enter ghana card number" value="">
-      </div>
-          <div>
-          <label for="status" class="block text-gray-700">Active Status</label>
-         <select id="status" name="status" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-            <option value="" selected disabled>Select Status</option>
-            <option value="active">Active</option>
-            <option value="on-leave">On Leave</option>
-            <option value="sacked">Sacked</option>
-            <option value="quit">Quit</option>
-          </select>
-        </div>
-        <div>
-          <label for="salary" class="block text-gray-700">Salary</label>
-          <input type="number" id="salary" name="salary" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
-        </div>
-      </div>
-      <div class="mt-5">
-        <button type="submit" name="submit" id="submitBtn" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700 hover:cursor-pointer">Save Changes</button>
-      </div>
-    </form>
+    <h2 class="text-xl font-bold mb-4">Shipment Update</h2>
+    <form id="updateShipmentForm" method="post">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+
+    <div>
+      <label for="tracking_number" class="block text-gray-700">Tracking Number</label>
+      <input type="text" id="tracking_number" name="tracking_number" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"  placeholder="12345">
+    </div>
+
+    <div>
+      <label for="sender_name" class="block text-gray-700">Sender Name</label>
+      <input type="text" id="sender_name" name="sender_name" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="John Doe">
+    </div>
+
+    <div>
+      <label for="sender_city" class="block text-gray-700">Sender City</label>
+      <input type="text" id="sender_city" name="sender_city" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Hong Kong">
+    </div>
+
+    <div>
+      <label for="sender_country" class="block text-gray-700">Sender Country</label>
+      <input type="text" id="sender_country" name="sender_country" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="China">
+    </div>
+
+    <div>
+      <label for="receiver_name" class="block text-gray-700">Receiver Name</label>
+      <input type="text" id="receiver_name" name="receiver_name" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Mary Doe">
+    </div>
+
+    <div>
+      <label for="receiver_city" class="block text-gray-700">Receiver City</label>
+      <input type="text" id="receiver_city" name="receiver_city" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Accra">
+    </div>
+
+    <div>
+      <label for="receiver_country" class="block text-gray-700">Receiver Country</label>
+      <input type="text" id="receiver_country" name="receiver_country" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Ghana">
+    </div>
+
+    <div>
+      <label for="receiver_phone" class="block text-gray-700">Receiver Phone</label>
+      <input type="text" id="receiver_phone" name="receiver_phone" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="02XXXXXXXXXX">
+    </div>
+
+    <div>
+      <label for="package_name" class="block text-gray-700">Package Name</label>
+      <input type="text" id="package_name" name="package_name" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="IPhone">
+    </div>
+
+    <div>
+      <label for="package_weight" class="block text-gray-700">Package Weight (kg)</label>
+      <input type="number" step="0.01" id="package_weight" name="package_weight" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="20">
+    </div>
+
+    <div>
+      <label for="package_len" class="block text-gray-700">Package Length (cm)</label>
+      <input type="number" step="0.01" id="package_len" name="package_len" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="10">
+    </div>
+
+    <div>
+      <label for="package_height" class="block text-gray-700">Package Height (cm)</label>
+      <input type="number" step="0.01" id="package_height" name="package_height" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="20">
+    </div>
+    <div>
+      <label for="package_quantity" class="block text-gray-700">Quantity</label>
+      <input type="number" id="package_quantity" name="package_quantity" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="1">
+    </div>
+
+    <div>
+      <label for="package_payment_method" class="block text-gray-700">Payment Method</label>
+      <select class="bg-gray-100 w-full p-2 border border-gray-300 rounded" id="package_payment_method" name="package_payment_method" >
+        <option value="" disabled selected>Choose Payment</option>
+        <option value="Bank Transfer">Bank Transfer</option>
+        <option value="Debit Card">Debit Card</option>
+        <option value="Mobile Money">Mobile Money</option>
+        </select>
+    </div>
+ <div>
+      <label for="package_expected_delivery_date" class="block text-gray-700">Expected Delivery Date</label>
+      <input type="date" id="package_expected_delivery_date" name="package_expected_delivery_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
+    </div>
+    <div>
+      <label for="package_pickup_date" class="block text-gray-700">Pickup Date/Time</label>
+      <input type="datetime-local" id="package_pickup_date" name="package_pickup_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Choose date">
+    </div>
+    <div>
+      <label for="carrier" class="block text-gray-700">Carrier</label>
+     <select class="bg-gray-100 w-full p-2 border border-gray-300 rounded" id="carrier" name="carrier">
+        <option value="" disabled selected>Choose Carrier</option>
+        <option value="DHL">DHL</option>
+        <option value="FedEx">FedEx</option>
+        </select>
+    </div>
+    <div>
+      <label for="package_type_of_shipment" class="block text-gray-700">Type of Shipment</label>
+      <select class="bg-gray-100 w-full p-2 border border-gray-300 rounded" id="package_type_of_shipment" name="package_type_of_shipment">
+        <option value="" disabled selected>Choose Shipment Mode</option>
+        <option value="Sea Freight">Sea Freight</option>
+        <option value="Air Freight">Air Freight</option>
+        </select>
+    </div>
+
+    <div>
+      <label for="origin" class="block text-gray-700">Origin</label>
+      <input type="text" id="origin" name="origin" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Mexico">
+    </div>
+
+    <div>
+      <label for="destination" class="block text-gray-700">Destination</label>
+      <input type="text" id="destination" name="destination" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Kumasi">
+    </div>
+  </div>
+     <div class="mt-3">
+      <label for="package_description" class="block text-gray-700">Package Description</label>
+      <textarea id="package_description" name="package_description" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="A box of IPhones"></textarea>
+    </div>
+  <div class="mt-5">
+    <button id="submitBtn" class="bg-blue-600 text-white px-8 py-2 rounded hover:bg-blue-700">Update Shipment</button>
+  </div>
+</form>
   </div>
 </div>
-<!-- Update History Modal  -->
+<!-- Update History Modal Starts Here  -->
 <div id="editTrackingModal" class="fixed inset-0 hidden z-50 bg-gray-400/10 backdrop-blur-md bg-opacity-20 flex items-center justify-center">
   <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl relative max-h-screen overflow-y-auto">
     <button onclick="closeTrackModal()" class="mt-3 absolute bg-red-500 w-8 h-8 rounded text-white top-2 right-2 hover:cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
@@ -222,9 +269,10 @@ Print
 </div>
 </main>
 <?php include_once 'includes/footer.php'; ?>
-<script src="https://cdn.jsdelivr.net/npm/dropzone@5/dist/min/dropzone.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+  // Search filter
   document.getElementById('searchInput').addEventListener('input', function () {
     const searchValue = this.value.toLowerCase();
     const rows = document.querySelectorAll('tbody tr');
@@ -235,123 +283,132 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // Modal control
   window.closeModal = function () {
     document.getElementById('editModal').classList.add('hidden');
   }
 
-  window.openEditModal = function (employee) {
+ window.openEditModal = function (shipment) {
   document.getElementById('editModal').classList.remove('hidden');
-  document.getElementById('editemployeeId').value = employee.employee_id;
-  document.getElementById('fullName').value = employee.full_name;
-  document.getElementById('hiredDate').value = employee.date_hired;
-  document.getElementById('email').value = employee.email;
-  document.getElementById('role').value = employee.role;
-  document.getElementById('dob').value = employee.dob;
-  document.getElementById('password').value = employee.password;
-  document.getElementById('status').value = employee.status;
-  document.getElementById('phoneNumber').value = employee.phone;
-  document.getElementById('residentialAddress').value = employee.residential_address;
-  document.getElementById('position').value = employee.position;
-  document.getElementById('salary').value = employee.salary;
-  document.getElementById('ghanaCardNumber').value = employee.ghana_card_number;
-}
+  document.getElementById('tracking_number').value = shipment.tracking_number;
+  document.getElementById('sender_name').value = shipment.sender_name;
+  document.getElementById('sender_city').value = shipment.sender_city;
+  document.getElementById('sender_country').value = shipment.sender_country;
+  document.getElementById('receiver_name').value = shipment.receiver_name;
+  document.getElementById('receiver_city').value = shipment.receiver_city;
+  document.getElementById('receiver_country').value = shipment.receiver_country;
+  document.getElementById('receiver_phone').value = shipment.receiver_phone;
+  document.getElementById('package_name').value = shipment.package_name;
+  document.getElementById('package_weight').value = shipment.package_weight;
+  document.getElementById('package_len').value = shipment.package_len;
+  document.getElementById('package_height').value = shipment.package_height;
+  document.getElementById('package_quantity').value = shipment.package_quantity;
+  document.getElementById('package_payment_method').value = shipment.package_payment_method;
+  document.getElementById('package_expected_delivery_date').value = shipment.package_expected_delivery_date;
+  document.getElementById('package_pickup_date').value = shipment.package_pickup_date;
+  document.getElementById('carrier').value = shipment.package_carrier;
+  document.getElementById('package_type_of_shipment').value = shipment.package_type_of_shipment;
+  document.getElementById('origin').value = shipment.origin;
+  document.getElementById('destination').value = shipment.destination;
+  document.getElementById('package_description').value = shipment.package_description;
 
-  document.querySelectorAll('.edit-btn').forEach(button => {
+  // Append shipment ID hidden field if not already in form
+  if (!document.getElementById('shipment_id')) {
+    const hiddenId = document.createElement('input');
+    hiddenId.type = 'hidden';
+    hiddenId.name = 'shipment_id';
+    hiddenId.id = 'shipment_id';
+    hiddenId.value = shipment.shipment_id;
+    document.getElementById('updateShipmentForm').appendChild(hiddenId);
+  } else {
+    document.getElementById('shipment_id').value = shipment.shipment_id;
+  }
+
+  // Change submit button text to indicate update
+  document.getElementById('submitBtn').textContent = 'Update Shipment';
+};
+
+
+document.querySelectorAll('.edit-btn').forEach(button => {
   button.addEventListener('click', function () {
-    const employee = JSON.parse(this.dataset.employee);
-    window.openEditModal(employee); // ✅ this will now work
+    const shipment = JSON.parse(this.dataset.employee); // correct: `employee` holds shipment data
+    window.openEditModal(shipment);
   });
 });
 
-//tracking history modal
-window.openTrackingModal = function (shipment) {
-  document.getElementById('editTrackingModal').classList.remove('hidden');
-  document.getElementById('trackingId').value = shipment.shipment_id;
-  document.getElementById('location').value = shipment.location;
-  document.getElementById('description').value = shipment.description;
-  document.getElementById('status').value = shipment.status;
-}
 
- document.querySelectorAll('.track-btn').forEach(button => {
-  button.addEventListener('click', function () {
-    const shipment = JSON.parse(this.dataset.shipment);
-    window.openTrackingModal(shipment); // ✅ this will now work
-  });
-});
-//close tracking history modal
- window.closeTrackModal = function () {
+  // Tracking Modal
+  window.openTrackingModal = function (shipment) {
+    document.getElementById('editTrackingModal').classList.remove('hidden');
+    document.getElementById('trackingId').value = shipment.shipment_id;
+    document.getElementById('location').value = shipment.location;
+    document.getElementById('description').value = shipment.description;
+    document.getElementById('status').value = shipment.status;
+  }
+
+  window.closeTrackModal = function () {
     document.getElementById('editTrackingModal').classList.add('hidden');
   }
-//submit the tracking form
-document.getElementById('editTrackingHistoryForm').addEventListener('submit', async function (event) {
-  event.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
 
-  try {
-    const res = await fetch('./functions/shipment/update-tracking-history.php', {
-      method: 'POST',
-      body: formData
+  document.querySelectorAll('.track-btn').forEach(button => {
+    button.addEventListener('click', async function () {
+      const shipment = JSON.parse(this.dataset.shipment);
+      try {
+        const response = await fetch('./functions/shipment/fetch-tracking-history.php?id=' + encodeURIComponent(shipment.shipment_id));
+        const data = await response.json();
+
+        if (data.success && data.tracking) {
+          window.openTrackingModal({
+            shipment_id: shipment.shipment_id,
+            location: data.tracking.location || '',
+            description: data.tracking.description || '',
+            status: data.tracking.status || ''
+          });
+        } else {
+          Swal.fire('Error', 'No tracking history found for this shipment.', 'warning');
+        }
+      } catch (error) {
+        Swal.fire('Error', 'Failed to fetch tracking history.', 'error');
+      }
     });
+  });
 
-    const result = await res.json();
-
-    if (result.success) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Tracking Updated',
-        text: 'Tracking history updated successfully',
-        timer: 2000,
-        timerProgressBar: true
-      }).then(() => {
-        document.getElementById('editTrackingModal').classList.add('hidden');
-      });
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Update Failed',
-        text: result.message || 'Could not update tracking info'
-      });
-    }
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Network Error',
-      text: 'An error occurred while updating.'
-    });
-  }
-});
-
-
-//fetching tracking history data
-document.querySelectorAll('.track-btn').forEach(button => {
-  button.addEventListener('click', async function () {
-    const shipment = JSON.parse(this.dataset.shipment);
+  // Submit tracking form
+  document.getElementById('editTrackingHistoryForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const formData = new FormData(this);
 
     try {
-      const response = await fetch('./functions/shipment/fetch-tracking-history.php?id=' + encodeURIComponent(shipment.id));
-      const data = await response.json();
+      const res = await fetch('./functions/shipment/update-tracking-history.php', {
+        method: 'POST',
+        body: formData
+      });
 
-      if (data.success && data.tracking) {
-        window.openTrackingModal({
-          shipment_id: shipment.id,
-          location: data.tracking.location || '',
-          description: data.tracking.description || '',
-          status: data.tracking.status || ''
+      const result = await res.json();
+
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Tracking Updated',
+          text: 'Tracking history updated successfully',
+          timer: 2000,
+          timerProgressBar: true
+        }).then(() => {
+          window.closeTrackModal();
+          window.lcation.reload()
         });
       } else {
-        Swal.fire('Error', 'No tracking history found for this shipment.', 'warning');
+        Swal.fire('Error', result.message || 'Could not update tracking info', 'error');
       }
     } catch (error) {
-      Swal.fire('Error', 'Failed to fetch tracking history.', 'error');
+      Swal.fire('Error', 'An error occurred while updating.', 'error');
     }
   });
-});
 
-
+  // Delete employee
   document.querySelectorAll('.delete-btn').forEach(button => {
     button.addEventListener('click', function () {
-      const employeeId = this.dataset.id;
+      const shipmentID = this.dataset.id;
       const row = this.closest('tr');
       Swal.fire({
         title: 'Are you sure?',
@@ -363,10 +420,10 @@ document.querySelectorAll('.track-btn').forEach(button => {
         confirmButtonText: 'Yes, delete it!'
       }).then(result => {
         if (result.isConfirmed) {
-          fetch('./functions/employee/delete-employee.php', {
+          fetch('./functions/employee/delete-shipment.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'id=' + encodeURIComponent(employeeId)
+            body: 'id=' + encodeURIComponent(shipmentID)
           })
           .then(res => res.json())
           .then(data => {
@@ -385,13 +442,13 @@ document.querySelectorAll('.track-btn').forEach(button => {
     });
   });
 
-  document.getElementById('editemployeeForm').addEventListener('submit', async function (event) {
+  // Submit employee form
+document.getElementById('updateShipmentForm').addEventListener('submit', async function (event) {
   event.preventDefault();
-  const form = this;
-  const formData = new FormData(form);
+  const formData = new FormData(this);
 
   try {
-    const res = await fetch('./functions/employee/update-employee.php', {
+    const res = await fetch('./functions/shipment/update-shipment.php', {
       method: 'POST',
       body: formData
     });
@@ -401,154 +458,125 @@ document.querySelectorAll('.track-btn').forEach(button => {
     if (result.success) {
       Swal.fire({
         icon: 'success',
-        title: 'Employee Updated',
-        text: 'Employee updated successfully',
+        title: 'Shipment Updated',
+        text: 'Shipment information updated successfully',
         timer: 2500,
         timerProgressBar: true
       }).then(() => {
         location.reload();
       });
     } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Validation Error',
-        html: result.message || 'Failed to update employee.'
-      });
+      Swal.fire('Validation Error', result.message || 'Failed to update shipment.', 'error');
     }
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Network Error',
-      text: 'Something went wrong.'
-    });
+    Swal.fire('Network Error', 'Something went wrong.', 'error');
   }
 });
 
-});
 
-//print logic
-function printTable() {
-  const printArea = document.querySelector('.print-area');
-  const styles = `
-    <style>
-      @media print {
-        body {
-          font-family: sans-serif;
+  // Print logic
+  window.printTable = function () {
+    const printArea = document.querySelector('.print-area');
+    const styles = `
+      <style>
+        @media print {
+          body { font-family: sans-serif; }
+          .no-print { display: none !important; }
+          .print-area { padding: 30px; }
+          .print-area table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+          }
+          .print-area th, .print-area td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+          .print-area tr:nth-child(even) {
+            background-color: #f9fafb;
+          }
+          .watermark {
+            position: fixed;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            color: black;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
+          }
+          footer {
+            position: fixed;
+            bottom: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+          }
         }
-        .no-print {
-          display: none !important;
-        }
-        .print-area {
-          padding: 30px;
-        }
-        .print-area table {
-          width: 100%;
-          border-collapse: collapse;
-          font-size: 13px;
-        }
-        .print-area th, .print-area td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        .print-area th {
-          font-size: 12px;
-        }
-        .print-area tr:nth-child(even) {
-          background-color: #f9fafb;
-        }
-        .watermark {
-          position: fixed;
-          top: 45%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          font-size: 80px;
-          color: black;
-          opacity: 0.05;
-          pointer-events: none;
-          z-index: 0;
-        }
-        .page-number::after {
-          content: "Page " counter(page);
-        }
-        footer {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          text-align: center;
-          font-size: 12px;
-          color: #9ca3af;
-        }
+      </style>
+    `;
+
+    const win = window.open('', '', 'height=800,width=1200');
+    win.document.write('<html><head><title>Print</title>' + styles + '</head><body>');
+    win.document.write('<div class="print-area">');
+    win.document.write('<div class="watermark">CONSOL HOTEL</div>');
+    win.document.write('<img src="your-logo.png" style="height:60px;margin-bottom:10px;">');
+    win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo & Logistics - Shipments</h3>');
+    win.document.write('<p style="text-align:center;font-size:12px;color:gray;">Printed on: ' + new Date().toLocaleString() + '</p>');
+    win.document.write(printArea.innerHTML);
+    win.document.write('</div><footer>Page</footer></body></html>');
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  }
+
+  // Download CSV
+  document.getElementById('downloadCSV').addEventListener('click', function () {
+    const table = document.getElementById('employeesTable');
+    const rows = table.querySelectorAll('thead tr, tbody tr');
+    let csvContent = "";
+
+    // Get action column indexes
+    const actionIndexes = [];
+    const headerCols = rows[0].querySelectorAll('th');
+    headerCols.forEach((th, i) => {
+      const text = th.textContent.trim().toLowerCase();
+      if (text === 'action' || text.includes('actions')) {
+        actionIndexes.push(i);
       }
-    </style>
-  `;
+    });
 
-  const win = window.open('', '', 'height=800,width=1200');
-  win.document.write('<html><head><title>Print Security Logs</title>');
-  win.document.write(styles);
-  win.document.write('</head><body>');
-  win.document.write('<div class="print-area">');
-  win.document.write('<div class="watermark">CONSOL HOTEL</div>');
-  win.document.write('<img src="your-logo.png" style="height:60px;margin-bottom:10px;">');
-  win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo & Logistics - Shipments</h3>');
-  win.document.write('<p style="text-align:center;font-size:12px;color:gray;">Printed on: ' + new Date().toLocaleString() + '</p>');
-  win.document.write(printArea.innerHTML);
-  win.document.write('</div><footer class="page-number"></footer></body></html>');
-  win.document.close();
-  win.focus();
-  win.print();
-  win.close();
-}
+    rows.forEach(row => {
+      const cols = row.querySelectorAll('th, td');
+      const rowData = Array.from(cols).map((col, i) => {
+        if (actionIndexes.includes(i)) return null;
+        let text = col.textContent.trim().replace(/"/g, '""');
+        if (/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(text)) {
+          const date = new Date(text);
+          if (!isNaN(date)) {
+            text = date.toLocaleString();
+          }
+        }
+        return `"${text}"`;
+      }).filter(Boolean);
 
-//csv download
-document.getElementById('downloadCSV').addEventListener('click', function () {
-  const table = document.getElementById('employeesTable');
-  const rows = table.querySelectorAll('thead tr, tbody tr');
-  let csvContent = "";
+      csvContent += rowData.join(",") + "\n";
+    });
 
-  // Get index(es) of "Action" columns by scanning the first header row
-  const actionIndexes = [];
-  const firstRowCols = rows[0].querySelectorAll('th');
-  firstRowCols.forEach((th, i) => {
-    const headerText = th.textContent.trim().toLowerCase();
-    if (headerText === 'action' || headerText.includes('actions')) {
-      actionIndexes.push(i);
-    }
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", "all-employees.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   });
 
-  // Loop through rows and collect data
-  rows.forEach(row => {
-    const cols = row.querySelectorAll('th, td');
-    const rowData = Array.from(cols).map((col, i) => {
-      // Skip action columns
-      if (actionIndexes.includes(i)) return null;
-
-      let text = col.textContent.trim().replace(/"/g, '""');
-
-      // Format datetime if it matches "YYYY-MM-DD HH:mm:ss"
-      if (/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(text)) {
-        const date = new Date(text);
-        if (!isNaN(date)) {
-          text = date.toLocaleString();
-        }
-      }
-
-      return `"${text}"`;
-    }).filter(Boolean); // Remove nulls (excluded columns)
-
-    csvContent += rowData.join(",") + "\n";
-  });
-
-  // Add UTF-8 BOM to fix ₵ symbol in Excel
-  const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.setAttribute("href", URL.createObjectURL(blob));
-  link.setAttribute("download", "all-employees.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 });
 </script>
+
 </body>
 </html>

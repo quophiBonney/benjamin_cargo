@@ -102,16 +102,11 @@ $session_role = strtolower(trim($_SESSION['role'] ?? ''));
       <input type="date" id="package_expected_delivery_date" name="package_expected_delivery_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
     </div>
     <div>
-      <label for="package_pickup_date" class="block text-gray-700">Pickup Date</label>
-      <input type="date" id="package_pickup_date" name="package_pickup_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Choose date">
-    </div>
-
-    <div>
-      <label for="package_pickup_time" class="block text-gray-700">Pickup Time</label>
-      <input type="time" id="package_pickup_time" name="package_pickup_time" class="bg-gray-100 w-full p-2 border border-gray-300 rounded">
+      <label for="package_pickup_date" class="block text-gray-700">Pickup Date/Time</label>
+      <input type="datetime-local" id="package_pickup_date" name="package_pickup_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Choose date">
     </div>
     <div>
-      <label for="package_carrier" class="block text-gray-700">Carrier</label>
+      <label for="carrier" class="block text-gray-700">Carrier</label>
      <select class="bg-gray-100 w-full p-2 border border-gray-300 rounded" id="carrier" name="carrier">
         <option value="" disabled selected>Choose Carrier</option>
         <option value="DHL">DHL</option>
@@ -137,10 +132,6 @@ $session_role = strtolower(trim($_SESSION['role'] ?? ''));
       <input type="text" id="destination" name="destination" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Kumasi">
     </div>
   </div>
-   <div class="mt-3">
-      <label for="package_departure_info" class="block text-gray-700">Departure Info</label>
-      <textarea id="package_departure_info" name="package_departure_info" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="We are expecting the package to arrive on time"></textarea>
-    </div>
      <div class="mt-3">
       <label for="package_description" class="block text-gray-700">Package Description</label>
       <textarea id="package_description" name="package_description" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="A box of IPhones"></textarea>

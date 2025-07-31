@@ -9,6 +9,7 @@ if (!$tracking_number) {
     exit;
 }
 
+// Fetch the shipment by tracking number
 $stmt = $dbh->prepare("SELECT * FROM shipments WHERE tracking_number = :tracking_number");
 $stmt->bindParam(':tracking_number', $tracking_number);
 $stmt->execute();
@@ -19,11 +20,18 @@ if (!$shipment) {
     exit;
 }
 
-$timeline_stmt = $dbh->prepare("SELECT * FROM tracking_history WHERE shipment_id = :shipment_id ORDER BY date_time DESC");
-$timeline_stmt->bindParam(':shipment_id', $shipment['id']);
+// Fetch tracking history based on shipment_id (not id)
+$timeline_stmt = $dbh->prepare("
+    SELECT location, description, status, date_time 
+    FROM tracking_history 
+    WHERE shipment_id = :shipment_id 
+    ORDER BY date_time DESC
+");
+$timeline_stmt->bindParam(':shipment_id', $shipment['shipment_id']);
 $timeline_stmt->execute();
 $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Return response
 echo json_encode([
     'status' => 'success',
     'data' => $shipment,

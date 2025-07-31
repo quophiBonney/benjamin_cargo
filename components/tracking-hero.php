@@ -11,7 +11,7 @@ header('Content-Type: text/html; charset=utf-8');
       </p>
 </div>
 </div>
-<div class="mt-5 p-6 max-w-6xl px-5 md:px-16 rounded md:mx-auto">
+<div class="mt-5 p-6 px-5 md:px-16 rounded md:mx-auto">
 <form id="tracking-form" class="w-full">
   <div class="w-full bg-white rounded-md p-1.5 flex items-center gap-2 border border-gray-200 shadow-md">
     <input 
@@ -31,7 +31,7 @@ header('Content-Type: text/html; charset=utf-8');
 </form>
 </div>
     <!-- Shipment Result -->
-   <div class="mt-10 w-full grid grid-col-1 md:grid-cols-2 gap-4">
+   <div class="mt-10 grid grid-col-1 md:grid-cols-2 gap-4">
      <div id="shipment-result" class="text-white"></div>
 
     <!-- Shipment Timeline -->
