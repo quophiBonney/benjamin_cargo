@@ -416,7 +416,7 @@ document.querySelectorAll('.edit-btn').forEach(button => {
       const row = this.closest('tr');
       Swal.fire({
         title: 'Are you sure?',
-        text: 'This employee will be permanently deleted.',
+        text: 'This shipment will be permanently deleted.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#e3342f',
@@ -424,7 +424,7 @@ document.querySelectorAll('.edit-btn').forEach(button => {
         confirmButtonText: 'Yes, delete it!'
       }).then(result => {
         if (result.isConfirmed) {
-          fetch('./functions/employee/delete-shipment.php', {
+          fetch('./functions/shipment/delete-shipment.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'id=' + encodeURIComponent(shipmentID)
@@ -433,9 +433,9 @@ document.querySelectorAll('.edit-btn').forEach(button => {
           .then(data => {
             if (data.success) {
               row.remove();
-              Swal.fire('Deleted!', 'The employee has been deleted.', 'success');
+              Swal.fire('Deleted!', 'The shipment has been deleted.', 'success');
             } else {
-              Swal.fire('Error!', data.message || 'Failed to delete employee.', 'error');
+              Swal.fire('Error!', data.message || 'Failed to delete shipment.', 'error');
             }
           })
           .catch(() => {
@@ -573,7 +573,7 @@ document.getElementById('updateShipmentForm').addEventListener('submit', async f
     const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.setAttribute("href", URL.createObjectURL(blob));
-    link.setAttribute("download", "all-employees.csv");
+    link.setAttribute("download", "all-shipments.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

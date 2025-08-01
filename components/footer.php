@@ -17,11 +17,11 @@
             </div>
              <div class="flex flex-col mt-5">
            <img src="https://www.jkcargo.top/themes/default/images/ewm.jpg" alt="" class="w-32"/>
-           <p class="text-sm font-bold">WeeChat</p>
+           <p class="text-sm font-bold mb-3">WeeChat</p>
             </div>
 </div>
-<p class="text-white">All rights reserved &copy; 2025</p>
+<hr/>
+<p class="test-sm text-white mt-5 text-center">All rights reserved &copy; 2025</p>
         </footer>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.22.2/dist/sweetalert2.all.min.js"></script>
 </body>
 </html>
