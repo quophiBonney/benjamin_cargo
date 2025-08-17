@@ -76,6 +76,13 @@ Print
         </tr>
     </thead>
     <tbody class="divide-y divide-gray-200">
+      <?php if(empty($shipments)): ?>
+         <tr>
+            <td colspan="7" class="py-4 px-4 text-center text-gray-500">
+                No shipment found
+            </td>
+        </tr>
+      <?php else: ?>
         <?php foreach ($shipments as $manifest): ?>
         <tr class="even:bg-gray-50 hover:bg-gray-100 transition duration-200">
             <td class="py-2 px-4"><?= htmlspecialchars($manifest['shipping_mark']) ?></td>
@@ -113,6 +120,7 @@ Print
             </td>
         </tr>
         <?php endforeach; ?>
+      <?php endif; ?>
     </tbody>
 </table>
 

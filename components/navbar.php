@@ -29,7 +29,7 @@
   :class="scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'" 
   class="fixed top-0 left-0 w-full z-50 transition-all duration-700 ease-in-out"
 >
-  <div class="px-6 lg:px-16 transition-all duration-700 ease-in-out">
+  <div class="px-6 lg:px-14 transition-all duration-700 ease-in-out">
     <nav 
       class="flex justify-between items-center text-gray-800 backdrop-blur-md bg-white/90 px-4 md:px-6 py-3 transition-all duration-700 ease-in-out"
       :class="scrolled ? 'rounded-none' : 'rounded-xl'">
