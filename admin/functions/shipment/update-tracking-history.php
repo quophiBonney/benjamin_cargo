@@ -2,39 +2,70 @@
 header('Content-Type: application/json');
 include_once '../../includes/dbconnection.php';
 
-// Get shipment ID from POST data
-$shipment_id = $_POST['shipment_id'] ?? null;
-$location = trim($_POST['location'] ?? '');
-$description = trim($_POST['description'] ?? '');
-$status = trim($_POST['status'] ?? '');
+// Force PDO to throw exceptions
+$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if (!$shipment_id || !$location || !$status) {
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Shipment ID, location and status are required'
-    ]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
 
-// Always insert a new tracking history entry
-$insert = $dbh->prepare("
-    INSERT INTO tracking_history (shipment_id, location, description, status, date_time)
-    VALUES (:shipment_id, :location, :description, :status, NOW())
-");
+$status = trim($_POST['status'] ?? '');
+if ($status === '') {
+    echo json_encode(['success' => false, 'message' => 'Status is required']);
+    exit;
+}
 
-$insert->bindParam(':shipment_id', $shipment_id, PDO::PARAM_INT);
-$insert->bindParam(':location', $location);
-$insert->bindParam(':description', $description);
-$insert->bindParam(':status', $status);
+try {
+    // Fetch all shipping marks
+    $stmt = $dbh->query("SELECT id FROM shipping_manifest");
+    $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if ($insert->execute()) {
+    if (empty($shipments)) {
+        echo json_encode(['success' => false, 'message' => 'No shipments found']);
+        exit;
+    }
+
+    // Prepare insert for tracking_history
+    $insert = $dbh->prepare("
+        INSERT INTO tracking_history (shipping_manifest_id, status, date)
+        VALUES (:shipping_manifest_id, :status, NOW())
+    ");
+
+    // Prepare update for shipping_manifest
+    $update = $dbh->prepare("
+        UPDATE shipping_manifest
+        SET status = :status
+        WHERE id = :shipping_manifest_id
+    ");
+
+    $addedCount = 0;
+
+    foreach ($shipments as $ship) {
+        // Append new status to tracking_history
+        $inserted = $insert->execute([
+            ':shipping_manifest_id' => $ship['id'],
+            ':status' => $status
+        ]);
+
+        if ($inserted) {
+            $addedCount++;
+        } else {
+            throw new Exception("Failed to insert tracking history for shipment ID: " . $ship['id']);
+        }
+
+        // Update the latest status in shipping_manifest
+        $update->execute([
+            ':status' => $status,
+            ':shipping_manifest_id' => $ship['id']
+        ]);
+    }
+
     echo json_encode([
         'success' => true,
-        'message' => 'Tracking history updated successfully'
+        'message' => "All shipment statuses appended successfully. Rows added to tracking_history: $addedCount"
     ]);
-} else {
-    echo json_encode([
-        'success' => false, 
-        'message' => 'Database operation failed: ' . implode(' ', $insert->errorInfo())
-    ]);
+
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }

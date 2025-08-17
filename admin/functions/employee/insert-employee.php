@@ -17,21 +17,12 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fullName = trim($_POST['fullName'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $salary = trim($_POST['salary'] ?? '');
     $phoneNumber = trim($_POST['phoneNumber'] ?? '');
-    $position = trim($_POST['position'] ?? '');
-    $hiredDate = trim($_POST['hiredDate'] ?? '');
-    $residentialAddress = trim($_POST['residentialAddress'] ?? '');
-    $latitude = trim($_POST['latitude'] ?? 0);
-    $longitude = trim($_POST['longitude'] ?? 0);
-    $ghanaCardNumber = trim($_POST['ghanaCardNumber'] ?? '');
     $password  = trim($_POST['password'] ?? '');
     $role      = trim($_POST['role'] ?? '');
-    $dob = trim($_POST['dob'] ?? '');
     // Validation
     if (
-        empty($fullName) || empty($email) || empty($salary) || empty($position) ||
-        empty($ghanaCardNumber) || empty($residentialAddress) || empty($hiredDate) || empty($dob) || empty($phoneNumber) || empty($phoneNumber) || empty($role)
+        empty($fullName) || empty($email) || empty($phoneNumber) || empty($role) || empty($password)
     ) {
         $errors[] = "All fields are required.";
     }
@@ -51,20 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Insert into DB
     if (empty($errors)) {
         $stmt = $dbh->prepare("INSERT INTO employees 
-            (full_name, position, email, phone, ghana_card_number, residential_address, date_hired, salary, longitude, latitude, role, password, dob)
+            (full_name, email, phone, role, password)
             VALUES
-            (:fullName, :position, :email, :phone, :ghanaCardNumber, :residentialAddress, :hiredDate, :salary, :longitude, :latitude, :role, :password, :dob)");
+            (:fullName, :email, :phone, :role, :password)");
         $stmt->bindParam(':fullName', $fullName);
-        $stmt->bindParam(':position', $position);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':phone', $phoneNumber);
-        $stmt->bindParam(':ghanaCardNumber', $ghanaCardNumber);
-        $stmt->bindParam(':residentialAddress', $residentialAddress);
-        $stmt->bindParam(':dob', $dob);
-        $stmt->bindParam(':hiredDate', $hiredDate);
-        $stmt->bindParam(':salary', $salary);
-        $stmt->bindParam(':longitude', $longitude);
-        $stmt->bindParam(':latitude', $latitude);
         $stmt->bindParam(':role', $role);
         $stmt->bindParam(':password', $hashedPassword);
 

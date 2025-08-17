@@ -1,4 +1,28 @@
 <!-- Responsive scroll-aware header with hamburger menu -->
+ <!-- <style>
+  #google_translate_element select {
+    background: transparent !important;
+    border: none !important;
+    font-size: 0.875rem !important; /* text-sm */
+    font-family: inherit !important;
+    color: #1f2937 !important; /* text-gray-800 */
+    padding: 0 !important;
+    outline: none !important;
+    width: 100% !important;
+    cursor: pointer;
+  }
+
+  /* Hide Google icon */
+  .goog-te-gadget-icon {
+    display: none !important;
+  }
+
+  /* Remove underline link styles */
+  #google_translate_element a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+</style> -->
 <header 
   x-data="{ scrolled: false, open: false }" 
   x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 10)" 
@@ -8,20 +32,28 @@
   <div class="px-6 lg:px-16 transition-all duration-700 ease-in-out">
     <nav 
       class="flex justify-between items-center text-gray-800 backdrop-blur-md bg-white/90 px-4 md:px-6 py-3 transition-all duration-700 ease-in-out"
-      :class="scrolled ? 'rounded-none' : 'rounded-xl'"
-    >
+      :class="scrolled ? 'rounded-none' : 'rounded-xl'">
+
       <!-- Logo -->
       <div>
-       <a href="index.php">
-         <img src="assets/benjamin_cargo_logo.png" alt="Benjamin Cargo & Logistics" class="w-20 h-auto" />
-</a>
+        <a href="index.php">
+          <img src="assets/benjamin_cargo_logo.png" alt="Benjamin Cargo & Logistics" class="w-20 h-auto" />
+        </a>
       </div>
 
       <!-- Desktop Menu -->
-      <div class="hidden md:flex gap-6 text-sm font-medium">
+      <div class="hidden md:flex gap-6 text-sm font-medium items-center">
         <a href="index.php" class="hover:text-blue-700 transition duration-300">Home</a>
-        <a href="tracking.php" class="hover:text-blue-700 transition duration-300">Logistics Query</a>
-        <a href="#" class="hover:text-blue-700 transition duration-300">I Need Cargo</a>
+       <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
+         <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
+       <a href="customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
+
+        <!-- Language Switcher -->
+       <!-- <div 
+  id="google_translate_element" 
+  class="relative inline-block bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm min-w-[160px]
+         shadow-sm hover:shadow-md transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500"
+></div> -->
       </div>
 
       <!-- Hamburger (Mobile) -->
@@ -44,24 +76,38 @@
     <!-- Mobile Menu Dropdown -->
     <div x-show="open" x-transition class="md:hidden mt-2 rounded bg-white w-full text-black px-4 py-3 space-y-3">
       <a href="index.php" class="block hover:text-blue-700 transition duration-300">Home</a>
-      <a href="tracking.php" class="block hover:text-blue-700 transition duration-300">Logistics Query</a>
-      <a href="#" class="block hover:text-blue-700 transition duration-300">I Need Cargo</a>
+      <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
+       <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
+      <a href="#customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
+
+      <!-- Mobile Language Switcher -->
+      <div id="google_translate_element_mobile" class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
     </div>
   </div>
 </header>
 
-
-
-
-<!-- JavaScript to handle scroll behavior -->
-
-
-<!-- Add margin to push content below fixed header -->
-
-
+<!-- Google Translate Script -->
 <script>
-  const nav = document.getElementById('mainNav');
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,zh-CN',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+  }, 'google_translate_element');
 
+  // Duplicate for mobile
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,zh-CN',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+  }, 'google_translate_element_mobile');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+<!-- Scroll behavior -->
+<script>
+  const nav = document.querySelector('header nav');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 10) {
       nav.classList.remove('mx-4', 'md:mx-10', 'mt-5', 'rounded-lg');
@@ -72,3 +118,10 @@
     }
   });
 </script>
+
+<!-- Style tweak to make Google dropdown match your design -->
+<style>
+  /* Remove Google default background */
+  .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon { display: none !important; }
+  body { top: 0px !important; }
+</style>

@@ -11,10 +11,10 @@ $role = $_SESSION['role'] ?? '';
     <?php
     $icons = [
       "Dashboard" => "fa-gauge-high",
-      "Staffs Dashboard" => "fa-gauge-high",
-       "Shipment" => "fa-gear",
-      "Employee" => "fa-address-card",
+      "Users" => "fa-address-card",
       "Announcement" => "fa-bullhorn",
+      "Shipment" => "fa-truck",
+      "Customers" => "fa-solid fa-clipboard-user", 
       "Attendance" => "fa-solid fa-clipboard-user", 
       "Finance" => "fa-solid fa-money-bill-1",
     ];
@@ -27,43 +27,24 @@ $role = $_SESSION['role'] ?? '';
         ],
         "roles" => ["admin", "manager", "hr", "receptionist", "staff", "cleaner"]
       ],
-         "Shipment" => [
+         "Customers" => [
         "links" => [
-          "create-shipment.php" => ["text" => "Create Shipment", "roles" => ["admin", "manager", "hr"]],
-          "all-shipments.php" => ["text" => "View All Shipments", "roles" => ["admin", "manager", "hr"]],
+          "all-customers.php" => ["text" => "All Customers", "roles" => ["admin", "manager", "hr"]],
         ],
         "roles" => ["admin", "manager", "hr", "sales"]
       ],
-        "Attendance" => [
+         "Shipment" => [
         "links" => [
-           "mark-attendance.php" => ["text" => "Mark Attendance", "roles" => ["admin", "manager", "receptionist", "staff", "cleaner"]],
-           "view-all-attendance.php" => ["text" => "View Attendance", "roles" => ["admin", "manager", "cleaner", "staff"]],
+          "all-shipments.php" => ["text" => "View All Shipments", "roles" => ["admin", "manager", "hr"]],
         ],
-        "roles" => ["admin", "manager", "receptionist", "staff", "cleaner"]
+        "roles" => ["admin", "manager", "hr", ]
       ],
-      "Employee" => [
+       "Users" => [
         "links" => [
-          "add-employee.php" => ["text" => "Add Employee", "roles" => ["admin", "manager"]],
-          "all-employees.php" => ["text" => "View All Employees", "roles" => ["admin", "manager"]],
-           "employee-leave-submission.php" => ["text" => "Request For Leave", "roles" => ["admin", "manager", "staff", "hr", "cleaner", "receptionist"]],
-           "leave-applications.php" => ["text" => "All Leave Applications", "roles" => ["admin", "manager","hr", "staff", "receptionist", "cleaner"]],
+          "all-users.php" => ["text" => "All Users", "roles" => ["admin", "manager", "hr"]],
         ],
-        "roles" => ["admin", "manager", "hr", "receptionist", "staff", "cleaner"]
+        "roles" => ["admin", "manager", "hr", "accountant"]
       ],
-       "Finance" => [
-        "links" => [
-          "new-expense.php" => ["text" => "Add Expense", "roles" => ["admin", "manager", "hr"]],
-          "all-expenses.php" => ["text" => "View All Expenses", "roles" => ["admin", "manager", "hr"]],
-        ],
-        "roles" => ["admin", "manager", "hr"]
-      ],
-      "Announcement" => [
-        "links" => [
-          "post-announcement.php" => ["text" => "Post Announcement", "roles" => ["admin", "manager"]],
-          "all-announcement.php" => ["text" => "All Announcements", "roles" => ["admin", "manager"]],
-        ],
-        "roles" => ["admin", "manager", "receptionist", "staff", "cleaner"]
-      ]
     ];
 
     foreach ($menus as $menuTitle => $data) {

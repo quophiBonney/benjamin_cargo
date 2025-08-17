@@ -7,157 +7,154 @@
     </p>
   </div>
 </div>
-
-<!-- Form Card Floating Under -->
-<section class="relative w-full overflow-hidden" x-data="{ 
-  tab: 'groupage',
-  showResult: false,
-  loadingPort: '',
-  dischargePort: '',
-  weight: '',
-  length: '',
-  width: '',
-  height: '',
-  volume: 0,
-  airAmount: 0,
-  seaAmount: 0
+<section class="relative w-full overflow-hidden" 
+  x-data="{ 
+    location: '',
+    goodsType: '',
+    length: '',
+    width: '',
+    height: '',
+    weight: '',
+    pieces: '',
+    cbm: 0,
+    seaCost: 0,
+    airCost: 0,
+    showResult: false
 }">
   <div class="mt-5 z-10 px-6 md:px-16 p-10">
     <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 mx-auto">
 
-      <!-- Tabs -->
-      <div class="flex flex-wrap gap-6 border-b border-gray-200 mb-6 text-sm font-medium">
-        <template x-for="option in [
-          { id: 'groupage', name: 'Shipping groupage container' },
-          { id: 'air', name: 'Air Express' },
-          { id: 'full', name: 'Shipping full container' },
-          { id: 'express', name: 'Express' },
-          { id: 'fba', name: 'FBA head stroke' }
-        ]" :key="option.id">
-          <button 
-            @click="tab = option.id" 
-            :class="tab === option.id ? 'border-blue-600 text-blue-600 border-b-2' : 'text-gray-500 hover:text-blue-500'" 
-            class="pb-2 transition-all duration-500"
-            x-text="option.name"
-          ></button>
-        </template>
-      </div>
-
-      <!-- Groupage Tab -->
-      <div x-show="tab === 'groupage'" x-transition:enter="transition ease-out duration-700" x-transition:leave="transition ease-in duration-500">
-        <div class="flex flex-wrap gap-4 items-end">
-          <div class="flex-1 min-w-[190px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Port of loading</label>
-            <select x-model="loadingPort" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500">
-              <option disabled selected value="">Select Port</option>
-              <option>Foshan warehouse</option>
-              <option>Shenzhen warehouse</option>
-              <option>Guangzhou warehouse</option>
-            </select>
-          </div>
-
-          <div class="flex-1 min-w-[200px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Port of discharge</label>
-            <select x-model="dischargePort" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500">
-              <option disabled selected value="">Select Destination</option>
-              <option>Accra</option>
-              <option>Tema</option>
-              <option>Lagos</option>
-            </select>
-          </div>
-
-          <div class="flex-1 min-w-[70px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">* Weight (kg)</label>
-            <input type="number" x-model="weight" placeholder="e.g., 45" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500" />
-          </div>
-
-          <div class="flex-1 min-w-[70px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Length (cm)</label>
-            <input type="number" x-model="length" placeholder="L" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500" />
-          </div>
-
-          <div class="flex-1 min-w-[70px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Width (cm)</label>
-            <input type="number" x-model="width" placeholder="W" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500" />
-          </div>
-
-          <div class="flex-1 min-w-[70px]">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Height (cm)</label>
-            <input type="number" x-model="height" placeholder="H" class="w-full p-2 border border-gray-300 rounded focus:ring-blue-500" />
-          </div>
-
-          <div class="flex-1 min-w-[180px]">
-            <button 
-              @click="
-                if (weight && length && width && height && loadingPort && dischargePort) {
-                  const vol = (parseFloat(length) * parseFloat(width) * parseFloat(height)) / 1000000;
-                  const chargeableWeight = Math.max(parseFloat(weight), vol * 200);
-
-                  volume = vol.toFixed(2);
-                  airAmount = (chargeableWeight * 5).toFixed(2);
-                  seaAmount = (vol * 100).toFixed(2);
-                  showResult = true;
-                } else {
-                  showResult = false;
-                  alert('Please fill all fields correctly!');
-                }
-              "
-              class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold text-sm py-2 rounded transition duration-300"
-            >
-              🔍 Query Transport Fee
-            </button>
-          </div>
+      <!-- Inputs -->
+      <div class="flex flex-wrap gap-4">
+        <!-- Destination -->
+        <div class="flex-1 min-w-[150px]">
+          <label class="block text-sm font-medium">Destination</label>
+          <select x-model="location" class="w-full p-2 border rounded">
+            <option value="">Select</option>
+            <option value="Accra">Accra</option>
+            <option value="Kumasi">Kumasi</option>
+          </select>
         </div>
 
-        <!-- Results Table -->
-        <div x-show="showResult" x-transition:enter="transition ease-out duration-700" x-transition:leave="transition ease-in duration-500" class="mt-10">
-          <h2 class="text-lg font-semibold text-gray-700 mb-4">Shipping Quote Details</h2>
-          <div class="overflow-auto">
-            <table class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg overflow-hidden text-center">
-              <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-                <tr>
-                  <th class="px-4 py-2">Port of Loading</th>
-                  <th class="px-4 py-2">Port of Discharge</th>
-                  <th class="px-4 py-2">Weight (kg)</th>
-                  <th class="px-4 py-2">Volume (m³)</th>
-                  <th class="px-4 py-2">Air Freight (USD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-white border-t">
-                  <td class="px-4 py-2" x-text="loadingPort"></td>
-                  <td class="px-4 py-2" x-text="dischargePort"></td>
-                  <td class="px-4 py-2" x-text="weight"></td>
-                  <td class="px-4 py-2" x-text="volume"></td>
-                  <td class="px-4 py-2 font-semibold text-green-600">$<span x-text="airAmount"></span></td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Goods Type -->
+        <div class="flex-1 min-w-[150px]">
+          <label class="block text-sm font-medium">Goods Type</label>
+          <select x-model="goodsType" class="w-full p-2 border rounded">
+            <option value="">Select</option>
+            <option value="normal">Normal Goods</option>
+            <option value="special">Special Goods</option>
+            <option value="battery">Battery Goods</option>
+            <option value="phone">Mobile Phone</option>
+            <option value="tablet">Tablet</option>
+            <option value="laptop">Laptop</option>
+          </select>
+        </div>
 
-            <table class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg overflow-hidden text-center mt-6">
-              <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-                <tr>
-                  <th class="px-4 py-2">Port of Loading</th>
-                  <th class="px-4 py-2">Port of Discharge</th>
-                  <th class="px-4 py-2">Volume (m³)</th>
-                  <th class="px-4 py-2">Sea Freight (USD)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="bg-white border-t">
-                  <td class="px-4 py-2" x-text="loadingPort"></td>
-                  <td class="px-4 py-2" x-text="dischargePort"></td>
-                  <td class="px-4 py-2" x-text="volume"></td>
-                  <td class="px-4 py-2 font-semibold text-blue-600">$<span x-text="seaAmount"></span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <!-- Dimensions -->
+        <div class="flex-1 min-w-[100px]">
+          <label class="block text-sm font-medium">Length (cm)</label>
+          <input type="number" x-model="length" class="w-full p-2 border rounded" placeholder="e.g., 50">
+        </div>
+        <div class="flex-1 min-w-[100px]">
+          <label class="block text-sm font-medium">Width (cm)</label>
+          <input type="number" x-model="width" class="w-full p-2 border rounded" placeholder="e.g., 20">
+        </div>
+        <div class="flex-1 min-w-[100px]">
+          <label class="block text-sm font-medium">Height (cm)</label>
+          <input type="number" x-model="height" class="w-full p-2 border rounded" placeholder="e.g., 30">
+        </div>
+
+        <!-- Weight / Pieces -->
+        <div class="flex-1 min-w-[100px]" x-show="goodsType==='normal' || goodsType==='special' || goodsType==='battery'">
+          <label class="block text-sm font-medium">Weight (kg)</label>
+          <input type="number" x-model="weight" class="w-full p-2 border rounded" placeholder="e.g., 45">
+        </div>
+        <div class="flex-1 min-w-[100px]" x-show="goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop'">
+          <label class="block text-sm font-medium">Pieces</label>
+          <input type="number" x-model="pieces" class="w-full p-2 border rounded">
+        </div>
+
+        <!-- Button -->
+        <div class="flex-1 min-w-[150px]">
+          <button @click="
+            if(location && goodsType){
+              // ---- Calculate Sea Freight ----
+              let rawCbm = (length/100 * width/100 * height/100);
+              if(rawCbm < 0.1) rawCbm = 0.1;   // minimum CBM
+              let seaRate = 0;
+              if(goodsType==='normal') seaRate = (location==='Accra') ? 240 : 260;
+              if(goodsType==='special') seaRate = (location==='Accra') ? 250 : 270;
+              if(goodsType==='battery') seaRate = 270;
+              let allowedWeight = rawCbm * 500;
+              let cbmFinal = rawCbm;
+              if(weight && weight > allowedWeight){
+                cbmFinal = Math.ceil(weight/500); // add CBM until fits
+              }
+              cbm = cbmFinal.toFixed(2);
+              seaCost = (cbmFinal * seaRate).toFixed(2);
+
+              // ---- Calculate Air Freight ----
+              let airRate = 0;
+              if(goodsType==='normal') airRate = (location==='Accra') ? 20 : 22;
+              if(goodsType==='special') airRate = (location==='Accra') ? 22 : 24;
+              if(goodsType==='phone') airRate = 25;
+              if(goodsType==='tablet') airRate = 30;
+              if(goodsType==='laptop') airRate = 50;
+              if(goodsType==='battery') airRate = 50;
+
+              if(goodsType==='normal' || goodsType==='special' || goodsType==='battery'){
+                airCost = (weight * airRate).toFixed(2);
+              } else {
+                airCost = (pieces * airRate).toFixed(2);
+              }
+
+              showResult = true;
+            } else {
+              alert('Please fill in destination, goods type, and package details.');
+            }
+          " 
+          class="bg-blue-900 text-white p-2 rounded w-full lg:mt-5">Get Quote</button>
         </div>
       </div>
 
-      <!-- Other Tabs -->
-      <div x-show="tab !== 'groupage'" class="text-gray-500 text-sm mt-6">Other tab content goes here...</div>
+      <!-- Results Table -->
+      <div x-show="showResult" class="mt-8">
+        <h2 class="font-semibold text-lg mb-4">Freight Quote</h2>
+        <div class="overflow-auto">
+          <table class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg overflow-hidden text-center">
+            <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-2">Type</th>
+                <th class="px-4 py-2">Destination</th>
+                <th class="px-4 py-2">Goods</th>
+                <th class="px-4 py-2">CBM</th>
+                <th class="px-4 py-2">Weight/Pieces</th>
+                <th class="px-4 py-2">Cost (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Sea Freight Row -->
+              <tr class="bg-white border-t">
+                <td class="px-4 py-2 font-medium text-blue-600">Sea Freight</td>
+                <td class="px-4 py-2" x-text="location"></td>
+                <td class="px-4 py-2" x-text="goodsType"></td>
+                <td class="px-4 py-2" x-text="cbm"></td>
+                <td class="px-4 py-2" x-text="weight"></td>
+                <td class="px-4 py-2 font-bold text-blue-600">$<span x-text="seaCost"></span></td>
+              </tr>
+              <!-- Air Freight Row -->
+              <tr class="bg-gray-50 border-t">
+                <td class="px-4 py-2 font-medium text-green-600">Air Freight</td>
+                <td class="px-4 py-2" x-text="location"></td>
+                <td class="px-4 py-2" x-text="goodsType"></td>
+                <td class="px-4 py-2">-</td>
+                <td class="px-4 py-2" x-text="(goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop') ? pieces : weight"></td>
+                <td class="px-4 py-2 font-bold text-green-600">$<span x-text="airCost"></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </section>

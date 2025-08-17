@@ -1,17 +1,24 @@
 <?php
+session_start();
+if (!isset($_SESSION['casaid'])) {
+    header("Location: login.php");
+    exit();
+}
+
 include_once '../admin/includes/dbconnection.php';
 header('Content-Type: application/json');
 
-$tracking_number = $_POST['tracking_number'] ?? '';
+// ✅ Get tracking number from POST
+$shipping_mark = $_POST['tracking_number'] ?? null;
 
-if (!$tracking_number) {
-    echo json_encode(['status' => 'error', 'message' => 'Tracking number is required']);
+if (!$shipping_mark) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid tracking number.']);
     exit;
 }
 
-// Fetch the shipment by tracking number
-$stmt = $dbh->prepare("SELECT * FROM shipments WHERE tracking_number = :tracking_number");
-$stmt->bindParam(':tracking_number', $tracking_number);
+// Fetch the shipment by shipping mark
+$stmt = $dbh->prepare("SELECT * FROM shipping_manifest WHERE shipping_mark = :shipping_mark");
+$stmt->bindParam(':shipping_mark', $shipping_mark);
 $stmt->execute();
 $shipment = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -20,20 +27,20 @@ if (!$shipment) {
     exit;
 }
 
-// Fetch tracking history based on shipment_id (not id)
+// Fetch tracking history
 $timeline_stmt = $dbh->prepare("
-    SELECT location, description, status, date_time 
+    SELECT status, date 
     FROM tracking_history 
-    WHERE shipment_id = :shipment_id 
-    ORDER BY date_time DESC
+    WHERE shipping_manifest_id = :shipping_manifest_id 
+    ORDER BY date DESC
 ");
-$timeline_stmt->bindParam(':shipment_id', $shipment['shipment_id']);
+
+$timeline_stmt->bindParam(':shipping_manifest_id', $shipment['id']);
 $timeline_stmt->execute();
 $timeline = $timeline_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Return response
 echo json_encode([
     'status' => 'success',
-    'data' => $shipment,
+    'shipment' => $shipment,
     'timeline' => $timeline
 ]);

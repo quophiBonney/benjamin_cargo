@@ -44,7 +44,14 @@ document.getElementById('tracking-form').addEventListener('submit', async functi
   e.preventDefault();
 
   const trackingNumber = document.getElementById('tracking_number').value.trim();
-  if (!trackingNumber) return;
+  if (!trackingNumber) {
+      Swal.fire({
+        icon: 'error',
+        text: "Please enter your tracking/consignment number",
+        confirmButtonColor: '#031186ff'
+      });
+    return;
+  }
 
   try {
     const response = await fetch('components/track-shipment.php', {
@@ -72,9 +79,9 @@ document.getElementById('tracking-form').addEventListener('submit', async functi
           <h2 class="text-xl font-bold mb-4">Shipment Details</h2>
           <ul class="space-y-2 text-left">
             <li><strong>Tracking Number:</strong> ${data.tracking_number}</li>
-            <li><strong>Sender:</strong> ${data.receiver_name} (${data.receiver_city}, ${data.receiver_country})</li>
-              <li><strong>Tracking Number:</strong> ${data.package_name}</li>
-                <li><strong>Tracking Number:</strong> ${data.package_payment_method}</li>
+            <li><strong>Receiver:</strong> ${data.receiver_name} (${data.receiver_city}, ${data.receiver_country})</li>
+              <li><strong>Package Name:</strong> ${data.package_name}</li>
+                <li><strong>Mode Of Payment:</strong> ${data.package_payment_method}</li>
           </ul>
         </div>
       `;
