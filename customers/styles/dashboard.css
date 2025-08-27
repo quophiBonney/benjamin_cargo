@@ -43,3 +43,19 @@ button {
 .ts-dropdown {
   z-index: 50 !important;
 }
+.customer-landing-page-background {
+  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)),
+    url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
+  backdrop-filter: blur(2px);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}
+.otp-verification-bg {
+  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)),
+    url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
+  backdrop-filter: blur(2px);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}

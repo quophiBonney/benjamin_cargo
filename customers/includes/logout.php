@@ -1,4 +1,5 @@
 <?php
+session_name("CUSTOMERSESSID");
 session_start();
 session_unset();
 session_destroy();
@@ -11,7 +12,5 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Redirect to login
 header("Location: ../login.php");
 exit;
-?>

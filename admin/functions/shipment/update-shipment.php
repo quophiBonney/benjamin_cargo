@@ -1,94 +1,88 @@
 <?php
+session_start();
+ob_clean();
 header('Content-Type: application/json');
-include_once '../../includes/dbconnection.php';
 
-// Get POST data
-$shipment_id = $_POST['shipment_id'] ?? null;
-$tracking_number = trim($_POST['tracking_number'] ?? '');
-$sender_name = trim($_POST['sender_name'] ?? '');
-$sender_city = trim($_POST['sender_city'] ?? '');
-$sender_country = trim($_POST['sender_country'] ?? '');
-$receiver_name = trim($_POST['receiver_name'] ?? '');
-$receiver_city = trim($_POST['receiver_city'] ?? '');
-$receiver_country = trim($_POST['receiver_country'] ?? '');
-$receiver_phone = trim($_POST['receiver_phone'] ?? '');
-$package_name = trim($_POST['package_name'] ?? '');
-$package_weight = trim($_POST['package_weight'] ?? '');
-$package_len = trim($_POST['package_len'] ?? '');
-$package_height = trim($_POST['package_height'] ?? '');
-$package_description = trim($_POST['package_description'] ?? '');
-$package_quantity = trim($_POST['package_quantity'] ?? '');
-$package_payment_method = trim($_POST['package_payment_method'] ?? '');
-$package_pickup_date = trim($_POST['package_pickup_date'] ?? '');
-$package_expected_delivery_date = trim($_POST['package_expected_delivery_date'] ?? '');
-$package_carrier = trim($_POST['carrier'] ?? '');
-$package_type_of_shipment = trim($_POST['package_type_of_shipment'] ?? '');
-$origin = trim($_POST['origin'] ?? '');
-$destination = trim($_POST['destination'] ?? '');
-$status = trim($_POST['status'] ?? '');
+include_once __DIR__ . '/../../../includes/dbconnection.php';
 
-// Validate required fields
-if (!$tracking_number || !$receiver_name || !$receiver_phone || !$package_name || !$origin || !$destination) {
-    echo json_encode(['success' => false, 'message' => 'Please fill in all required fields.']);
+// Utility function to return JSON and exit
+function respond($success, $message = '', $extra = []) {
+    echo json_encode(array_merge(['success' => $success, 'message' => $message], $extra));
     exit;
 }
 
-// Update shipment
-$update = $dbh->prepare("
-    UPDATE shipments SET
-        tracking_number = :tracking_number,
-        sender_name = :sender_name,
-        sender_city = :sender_city,
-        sender_country = :sender_country,
-        receiver_name = :receiver_name,
-        receiver_city = :receiver_city,
-        receiver_country = :receiver_country,
-        receiver_phone = :receiver_phone,
-        package_name = :package_name,
-        package_weight = :package_weight,
-        package_len = :package_len,
-        package_height = :package_height,
-        package_description = :package_description,
-        package_quantity = :package_quantity,
-        package_payment_method = :package_payment_method,
-        package_pickup_date = :package_pickup_date,
-        package_expected_delivery_date = :package_expected_delivery_date,
-        package_carrier = :package_carrier,
-        package_type_of_shipment = :package_type_of_shipment,
-        origin = :origin,
-        destination = :destination,
-        status = :status
-    WHERE shipment_id = :shipment_id
-");
+// Check session for logged-in employee
+$userID = $_SESSION['employee_id'] ?? null;
+if (!$userID) {
+    respond(false, 'Unauthorized access. Please log in.');
+}
 
-// Bind parameters
-$update->bindParam(':tracking_number', $tracking_number);
-$update->bindParam(':sender_name', $sender_name);
-$update->bindParam(':sender_city', $sender_city);
-$update->bindParam(':sender_country', $sender_country);
-$update->bindParam(':receiver_name', $receiver_name);
-$update->bindParam(':receiver_city', $receiver_city);
-$update->bindParam(':receiver_country', $receiver_country);
-$update->bindParam(':receiver_phone', $receiver_phone);
-$update->bindParam(':package_name', $package_name);
-$update->bindParam(':package_weight', $package_weight);
-$update->bindParam(':package_len', $package_len);
-$update->bindParam(':package_height', $package_height);
-$update->bindParam(':package_description', $package_description);
-$update->bindParam(':package_quantity', $package_quantity);
-$update->bindParam(':package_payment_method', $package_payment_method);
-$update->bindParam(':package_pickup_date', $package_pickup_date);
-$update->bindParam(':package_expected_delivery_date', $package_expected_delivery_date);
-$update->bindParam(':package_carrier', $package_carrier);
-$update->bindParam(':package_type_of_shipment', $package_type_of_shipment);
-$update->bindParam(':origin', $origin);
-$update->bindParam(':destination', $destination);
-$update->bindParam(':status', $status);
-$update->bindParam(':shipment_id', $shipment_id, PDO::PARAM_INT);
+// Ensure POST method
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    respond(false, 'Invalid request method.');
+}
 
-// Execute and return result
-if ($update->execute()) {
-    echo json_encode(['success' => true, 'message' => 'Shipment updated successfully.']);
+// Collect input safely
+$id = $_POST['id'] ?? null;
+$shippingMark = trim($_POST['shippingMark'] ?? '');
+$entryDate = trim($_POST['entryDate'] ?? '');
+$email = trim($_POST['email'] ?? '');
+$packageName = trim($_POST['packageName'] ?? '');
+$eta = trim($_POST['eta'] ?? '');
+$pieces = trim($_POST['pieces'] ?? ''); 
+$cbm = trim($_POST['cbm'] ?? '');
+$status = trim($_POST['status'] ?? '');
+
+$requiredFields = [
+    'id' => $id,
+    'shippingMark' => $shippingMark,
+    'entryDate' => $entryDate,
+    'packageName' => $packageName,
+    'eta' => $eta,
+    'pieces' => $pieces,
+    'cbm' => $cbm,
+    'status' => $status,
+];
+
+$missing = [];
+foreach ($requiredFields as $field => $value) {
+    if (empty($value)) $missing[] = $field;
+}
+
+if (!empty($missing)) {
+    respond(false, 'Missing fields: ' . implode(', ', $missing));
+}
+
+// Build the SQL update query
+$updateQuery = "UPDATE shipping_manifest SET 
+    shipping_mark = ?,
+    entry_date = ?, 
+    package_name = ?, 
+    eta = ?, 
+    number_of_pieces = ?,
+    volume_cbm = ?,
+    status = ?";
+
+$params = [
+    $shippingMark,
+    $entryDate,
+    $packageName,
+    $eta,
+    $pieces,
+    $cbm,
+    $status
+];
+
+$updateQuery .= " WHERE id = ?";
+$params[] = $id;
+
+// Prepare and execute
+$stmt = $dbh->prepare($updateQuery);
+$success = $stmt->execute($params);
+
+// Response
+if ($success) {
+    respond(true, 'Packing list updated successfully.');
 } else {
-    echo json_encode(['success' => false, 'message' => 'Failed to update shipment.']);
+    respond(false, 'Failed to update packing list.');
 }

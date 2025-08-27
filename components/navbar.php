@@ -29,7 +29,7 @@
   :class="scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'" 
   class="fixed top-0 left-0 w-full z-50 transition-all duration-700 ease-in-out"
 >
-  <div class="px-6 lg:px-14 transition-all duration-700 ease-in-out">
+  <div class="px-6 lg:px-12 transition-all duration-700 ease-in-out">
     <nav 
       class="flex justify-between items-center text-gray-800 backdrop-blur-md bg-white/90 px-4 md:px-6 py-3 transition-all duration-700 ease-in-out"
       :class="scrolled ? 'rounded-none' : 'rounded-xl'">
@@ -37,7 +37,7 @@
       <!-- Logo -->
       <div>
         <a href="index.php">
-          <img src="assets/benjamin_cargo_logo.png" alt="Benjamin Cargo & Logistics" class="w-20 h-auto" />
+          <img src="assets/logo.png" alt="Benjamin Cargo & Logistics" class="w-20 h-auto" />
         </a>
       </div>
 
@@ -46,7 +46,7 @@
         <a href="index.php" class="hover:text-blue-700 transition duration-300">Home</a>
        <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
          <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
-       <a href="customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
+       <a href="customers/login.php" target="_blank" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
 
         <!-- Language Switcher -->
        <!-- <div 
@@ -78,7 +78,7 @@
       <a href="index.php" class="block hover:text-blue-700 transition duration-300">Home</a>
       <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
        <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
-      <a href="#customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
+      <a href="customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
 
       <!-- Mobile Language Switcher -->
       <div id="google_translate_element_mobile" class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
@@ -110,10 +110,10 @@ function googleTranslateElementInit() {
   const nav = document.querySelector('header nav');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 10) {
-      nav.classList.remove('mx-4', 'md:mx-10', 'mt-5', 'rounded-lg');
-      nav.classList.add('w-full', 'shadow-md');
+      nav.classList.remove('mx-3', 'mt-5', 'rounded-lg');
+      nav.classList.add('w-full');
     } else {
-      nav.classList.add('mx-4', 'md:mx-10', 'mt-5', 'rounded-lg');
+      nav.classList.add('mx-3', 'mt-5', 'rounded-lg');
       nav.classList.remove('w-full');
     }
   });

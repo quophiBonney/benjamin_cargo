@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once './includes/dbconnection.php';
+ include_once __DIR__ . '../../includes/dbconnection.php';
 
 if (!isset($_SESSION['casaid'])) {
     header("Location: login.php");
@@ -17,7 +17,9 @@ $stmt->execute([':customer_id' => $customer_id]);
 $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if (!$records) {
-    die('No shipping records found for your account.');
+    echo "<script>alert('No shipping records found for your account.')</script>";
+    echo "<script>window.location.href='login.php'</script>";
+    die;
 }
 ?>
 
@@ -50,11 +52,7 @@ if (!$records) {
                             <td class="px-4 py-2 border-b"><?= htmlspecialchars($data['volume_cbm']) ?></td>
                             <td class="py-2 flex gap-1 px-4 space-x-1 no-print">
                                 <!-- Edit Button -->
-                                <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 transition edit-btn"
-                                    data-manifest='<?= json_encode($data, JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <a href="fpdf/shipping-invoice.php?id=<?= $data['id'] ?>" target="_blank"
+                                <a href="./fpdf/shipment-invoice.php?id=<?= $data['id'] ?>" target="_blank"
                                     class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                                     <i class="fa-solid fa-file-invoice"></i>
                                 </a>

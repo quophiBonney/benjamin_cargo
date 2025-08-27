@@ -1,5 +1,5 @@
 <?php
-include_once 'includes/auth.php';
+include_once 'templates/auth.php';
 $allowed_roles = ['admin', 'manager'];
 $session_role = strtolower(trim($_SESSION['role'] ?? ''));
 
@@ -9,19 +9,15 @@ if (!in_array($session_role, $allowed_roles)) {
 }
 ?>
 
-<?php include_once 'includes/sidebar.php'; ?>
-<?php include_once 'includes/header.php'; ?>
+<?php include_once 'templates/sidebar.php'; ?>
+<?php include_once 'templates/header.php'; ?>
 
 <!-- Main Content -->
   <main class="flex-1 md:ml-64 px-4 transition-all">
-    <?php include_once 'includes/app-bar.php';?>
+    <?php include_once 'templates/app-bar.php';?>
   <!-- Navbar -->
 
   <?php include_once 'dashboard-cards.php'; ?>
-  <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <?php include_once 'employee-anniversary.php';?>
-    <?php include_once 'employee-birthday.php';?>
-  </div> -->
    <div class="grid grid-cols-1 mt-10">
   <?php include_once 'line-chart.php'?>
 </div>
@@ -30,6 +26,6 @@ if (!in_array($session_role, $allowed_roles)) {
 </div>
 
 <!-- Scripts -->
- <?php include_once 'includes/footer.php'; ?>
+ <?php include_once 'templates/footer.php'; ?>
 </body>
 </html>

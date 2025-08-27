@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-include_once '../../includes/dbconnection.php';
+ include_once __DIR__ . '/../../../includes/dbconnection.php'; 
 
 if (!isset($_GET['id'])) {
     echo json_encode(['success' => false, 'message' => 'No shipment ID provided']);

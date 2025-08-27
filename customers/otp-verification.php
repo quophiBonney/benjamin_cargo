@@ -6,8 +6,8 @@ if (!isset($_SESSION['otp_pending_customer'])) {
 }
 ?>
 <?php include './includes/header-two.php'; ?>
-<body class="h-screen flex justify-center items-center px-4 bg-slate-50">
-  <div class="bg-white shadow-lg rounded-xl w-full max-w-md p-6">
+<body class="otp-verification-bg h-screen flex justify-center items-center px-4 bg-slate-50">
+  <div class="bg-white shadow-lg rounded-xl w-full max-w-md p-4 md:p-6">
     
     <!-- Title -->
     <div class="flex flex-col justify-center items-center text-slate-800 mb-6">
@@ -19,9 +19,9 @@ if (!isset($_SESSION['otp_pending_customer'])) {
 
     <!-- OTP Form -->
     <form id="otpForm" class="space-y-6">
-      <div class="flex justify-between space-x-2">
+      <div class="flex justify-between space-x-1 md:space-x-0">
         <?php for ($i = 0; $i < 6; $i++): ?>
-          <input type="text" maxlength="1" class="otp-input w-12 h-12 border border-slate-300 rounded-lg text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-slate-400" />
+          <input type="text" maxlength="1" class="otp-input w-10 h-10 md:w-12 md:h-12 border border-slate-300 rounded-lg text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-slate-400" />
         <?php endfor; ?>
       </div>
 
@@ -30,7 +30,7 @@ if (!isset($_SESSION['otp_pending_customer'])) {
 
       <!-- Submit Button -->
       <button type="submit" id="submitOtpBtn"
-        class="w-full bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed">
+        class="w-full bg-indigo-700 text-white px-6 py-3 rounded-md hover:bg-slate-800 disabled:opacity-60 disabled:cursor-not-allowed">
         Verify OTP
       </button>
 

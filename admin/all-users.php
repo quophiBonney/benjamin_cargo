@@ -1,20 +1,20 @@
 <?php 
-include_once 'includes/auth.php';
+include_once 'templates/auth.php';
 $allowed_roles = ['admin', 'manager', 'hr'];
 $session_role = strtolower(trim($_SESSION['role'] ?? ''));
 if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
-    header("Location: staffs-dashboard.php");
+    header("Location: login.php");
     exit;
 }
-include_once 'includes/dbconnection.php';
+ include_once __DIR__ . '../../includes/dbconnection.php';
 $query = "SELECT * FROM employees ORDER BY employee_id ASC";
 $stmt = $dbh->prepare($query);
 $stmt->execute();
 $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<?php include_once 'includes/sidebar.php'; ?>
-<?php include_once 'includes/header.php'; ?>
-<?php include_once 'includes/app-bar.php';?>
+<?php include_once 'templates/sidebar.php'; ?>
+<?php include_once 'templates/header.php'; ?>
+<?php include_once 'templates/app-bar.php';?>
  <main class="flex-1 md:ml-64 px-4 transition-all">
   <input type="file" id="fileInput" accept=".csv, .xlsx" style="display: none;">
 
@@ -267,7 +267,7 @@ Print
   </div>
 </div>
 </main>
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once 'templates/footer.php'; ?>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   // ----- Element cache -----

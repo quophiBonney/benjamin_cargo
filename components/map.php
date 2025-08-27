@@ -1,0 +1,3 @@
+<div class="grid grid-cols-1 mt-16">
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.6133784068547!2d-0.1005465250143571!3d5.6239561943570795!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf850017d85093%3A0x30e226580e882ab4!2sBenjamin%20Cargo%20Logistics%20Warehouse!5e0!3m2!1sen!2sgh!4v1755536206081!5m2!1sen!2sgh" class="w-full h-96" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>

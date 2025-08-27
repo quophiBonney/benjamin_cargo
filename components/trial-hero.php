@@ -1,14 +1,17 @@
 <!-- Hero Background -->
 <div class="w-full trial-bg h-screen flex flex-col justify-center">
-  <div class="px-6 md:px-16 mt-24 md:mt-0 text-white">
-    <h1 class="text-2xl md:text-5xl font-bold uppercase mb-4">Benjamin Cargo & Logistics</h1>
+  <div class="px-6 md:px-14 mt-24 md:mt-0 text-white">
+    <h1 class="text-2xl md:text-5xl font-bold uppercase mb-4 mt-5">Benjamin Cargo Logistics</h1>
     <p class="text-sm md:text-md lg:text-lg lg:max-w-xl">
-     Fast, reliable cargo shipping and logistics. Choose your port, fill the cargo info, and get your transport fee instantly. Lorem ipsum dolor sit amet consectetur adipisicing elit. Hic quidem voluptatum eveniet asperiores dolores laboriosam, qui veniam et, maxime numquam aliquam ullam necessitatibus deleniti placeat? Dolores perspiciatis accusamus vel laborum omnis sunt debitis possimus dolorem itaque dignissimos reiciendis, recusandae placeat.
+    Benjamin Cargo Logistics in a Glance
+Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC) specializing in deep-sea Roll-on Roll-off (RoRo) and container shipping services. Our operations focus on key destinations in West & Middle East Africa, offering reliable and efficient transport solutions.
     </p>
   </div>
 </div>
-<section class="relative w-full overflow-hidden" 
+<section 
+ class="relative w-full overflow-hidden" 
   x-data="{ 
+    mode: '',
     location: '',
     goodsType: '',
     length: '',
@@ -19,13 +22,26 @@
     cbm: 0,
     seaCost: 0,
     airCost: 0,
-    showResult: false
+     rate: 0,
+    showResult: false,
+    showModal: false
 }">
   <div class="mt-5 z-10 px-6 md:px-16 p-10">
-    <div class="bg-white rounded-lg shadow-2xl p-6 md:p-8 mx-auto">
-
+    <div class="bg-white rounded-lg shadow-xl p-4 md:p-8 mx-auto">
       <!-- Inputs -->
       <div class="flex flex-wrap gap-4">
+
+        <!-- Mode -->
+        <div class="flex-1 min-w-[200px]">
+          <label class="block text-sm font-medium">Shipping Mode</label>
+          <select x-model="mode" class="w-full p-2 border rounded">
+            <option value="">Select Mode</option>
+            <option value="Sea">Sea</option>
+            <option value="Air-Normal">Air (Normal)</option>
+            <option value="Air-Express">Air (Express)</option>
+          </select>
+        </div>
+
         <!-- Destination -->
         <div class="flex-1 min-w-[150px]">
           <label class="block text-sm font-medium">Destination</label>
@@ -41,120 +57,274 @@
           <label class="block text-sm font-medium">Goods Type</label>
           <select x-model="goodsType" class="w-full p-2 border rounded">
             <option value="">Select</option>
-            <option value="normal">Normal Goods</option>
-            <option value="special">Special Goods</option>
-            <option value="battery">Battery Goods</option>
-            <option value="phone">Mobile Phone</option>
-            <option value="tablet">Tablet</option>
-            <option value="laptop">Laptop</option>
+            <template x-if="mode==='Sea'">
+              <optgroup label="Sea Freight">
+                <option value="normal">Normal Goods</option>
+                <option value="special">Special Goods</option>
+                <option value="battery">Battery Goods</option>
+              </optgroup>
+            </template>
+            <template x-if="mode==='Air-Express'">
+              <optgroup label="Air Express">
+                <option value="normal">Normal Goods</option>
+                <option value="special">Special Goods</option>
+                <option value="phone">Mobile Phone</option>
+                <option value="tablet">Tablet</option>
+                <option value="laptop">Laptop</option>
+                <option value="battery">Pure Battery</option>
+              </optgroup>
+            </template>
+            <template x-if="mode==='Air-Normal'">
+              <optgroup label="Air Normal">
+                <option value="normal">Normal Goods</option>
+                <option value="special">Special Goods</option>
+                <option value="battery">Battery Goods</option>
+              </optgroup>
+            </template>
           </select>
         </div>
 
-        <!-- Dimensions -->
-        <div class="flex-1 min-w-[100px]">
-          <label class="block text-sm font-medium">Length (cm)</label>
-          <input type="number" x-model="length" class="w-full p-2 border rounded" placeholder="e.g., 50">
-        </div>
-        <div class="flex-1 min-w-[100px]">
-          <label class="block text-sm font-medium">Width (cm)</label>
-          <input type="number" x-model="width" class="w-full p-2 border rounded" placeholder="e.g., 20">
-        </div>
-        <div class="flex-1 min-w-[100px]">
-          <label class="block text-sm font-medium">Height (cm)</label>
-          <input type="number" x-model="height" class="w-full p-2 border rounded" placeholder="e.g., 30">
-        </div>
+        <!-- Dimensions (Sea) -->
+        <template x-if="mode==='Sea'">
+          <div class="flex flex-wrap gap-4 w-full">
+            <div class="flex-1 min-w-[100px]">
+              <label class="block text-sm font-medium">Length (cm)</label>
+              <input type="number" x-model="length" class="w-full p-2 border rounded" placeholder="e.g., 100">
+            </div>
+            <div class="flex-1 min-w-[100px]">
+              <label class="block text-sm font-medium">Width (cm)</label>
+              <input type="number" x-model="width" class="w-full p-2 border rounded" placeholder="e.g., 80">
+            </div>
+            <div class="flex-1 min-w-[100px]">
+              <label class="block text-sm font-medium">Height (cm)</label>
+              <input type="number" x-model="height" class="w-full p-2 border rounded" placeholder="e.g., 45">
+            </div>
+          </div>
+        </template>
 
-        <!-- Weight / Pieces -->
-        <div class="flex-1 min-w-[100px]" x-show="goodsType==='normal' || goodsType==='special' || goodsType==='battery'">
-          <label class="block text-sm font-medium">Weight (kg)</label>
-          <input type="number" x-model="weight" class="w-full p-2 border rounded" placeholder="e.g., 45">
-        </div>
-        <div class="flex-1 min-w-[100px]" x-show="goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop'">
-          <label class="block text-sm font-medium">Pieces</label>
-          <input type="number" x-model="pieces" class="w-full p-2 border rounded">
-        </div>
+        <!-- Weight (Air per kg) -->
+        <template x-if="(mode==='Air-Normal' || mode==='Air-Express') && (goodsType==='normal' || goodsType==='special' || goodsType==='battery')">
+          <div class="flex-1 min-w-[100px]">
+            <label class="block text-sm font-medium">Weight (kg)</label>
+            <input type="number" x-model="weight" class="w-full p-2 border rounded">
+          </div>
+        </template>
+
+        <!-- Pieces (Air per unit items) -->
+        <template x-if="mode==='Air-Express' && (goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop')">
+          <div class="flex-1 min-w-[100px]">
+            <label class="block text-sm font-medium">Pieces</label>
+            <input type="number" x-model="pieces" class="w-full p-2 border rounded">
+          </div>
+        </template>
 
         <!-- Button -->
-        <div class="flex-1 min-w-[150px]">
-          <button @click="
-            if(location && goodsType){
-              // ---- Calculate Sea Freight ----
-              let rawCbm = (length/100 * width/100 * height/100);
-              if(rawCbm < 0.1) rawCbm = 0.1;   // minimum CBM
-              let seaRate = 0;
-              if(goodsType==='normal') seaRate = (location==='Accra') ? 240 : 260;
-              if(goodsType==='special') seaRate = (location==='Accra') ? 250 : 270;
-              if(goodsType==='battery') seaRate = 270;
-              let allowedWeight = rawCbm * 500;
-              let cbmFinal = rawCbm;
-              if(weight && weight > allowedWeight){
-                cbmFinal = Math.ceil(weight/500); // add CBM until fits
-              }
-              cbm = cbmFinal.toFixed(2);
-              seaCost = (cbmFinal * seaRate).toFixed(2);
+       <!-- Button -->
+<div class="min-w-[150px]">
+  <button @click="
+    if(location && mode && goodsType){
+       seaCost = 0; airCost = 0; cbm = 0;
 
-              // ---- Calculate Air Freight ----
-              let airRate = 0;
-              if(goodsType==='normal') airRate = (location==='Accra') ? 20 : 22;
-              if(goodsType==='special') airRate = (location==='Accra') ? 22 : 24;
-              if(goodsType==='phone') airRate = 25;
-              if(goodsType==='tablet') airRate = 30;
-              if(goodsType==='laptop') airRate = 50;
-              if(goodsType==='battery') airRate = 50;
+      // SEA CALCULATION
+      if(mode==='Sea'){
+        let rawCbm = (length/100 * width/100 * height/100);
+        if(rawCbm < 0.1) rawCbm = 0.1; // minimum CBM
+        cbm = rawCbm; // keep numeric
 
-              if(goodsType==='normal' || goodsType==='special' || goodsType==='battery'){
-                airCost = (weight * airRate).toFixed(2);
-              } else {
-                airCost = (pieces * airRate).toFixed(2);
-              }
+        rate = 0;
+        if(goodsType==='normal') rate = 240;
+        if(goodsType==='special') rate = 250;
+        if(goodsType==='battery') rate = 270;
 
-              showResult = true;
-            } else {
-              alert('Please fill in destination, goods type, and package details.');
-            }
-          " 
-          class="bg-blue-900 text-white p-2 rounded w-full lg:mt-5">Get Quote</button>
+        seaCost = (rawCbm * rate).toFixed(2);
+      }
+
+      // AIR NORMAL
+      if(mode==='Air-Normal'){
+        rate = 0;
+        if(goodsType==='normal') rate = 20;
+        if(goodsType==='special') rate = 22;
+        if(goodsType==='battery') rate = 50; 
+        airCost = (weight * rate).toFixed(2);
+      }
+
+      // AIR EXPRESS
+      if(mode==='Air-Express'){
+        rate = 0;
+        if(goodsType==='normal') rate = 20;
+        if(goodsType==='special') rate = 22;
+        if(goodsType==='battery') rate = 50;
+        if(goodsType==='phone') rate = 25;
+        if(goodsType==='tablet') rate = 30;
+        if(goodsType==='laptop') rate = 50;
+
+        if(goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop'){
+          airCost = (pieces * rate).toFixed(2);
+        } else {
+          airCost = (weight * rate).toFixed(2);
+        }
+      }
+
+      showResult = true;
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Missing Information',
+        text: 'Please fill all required fields before getting a quote.'
+      });
+    }
+  " 
+  class="bg-blue-900 text-white p-2 rounded w-full lg:mt-5" id="getQuoteBtn">Get Quote</button>
+</div>
+
         </div>
-      </div>
+
 
       <!-- Results Table -->
       <div x-show="showResult" class="mt-8">
-        <h2 class="font-semibold text-lg mb-4">Freight Quote</h2>
+       <div class="flex justify-between mb-3">
+          <h2 class="font-semibold text-lg mb-4">Freight Quote</h2>
+    <button @click="showModal = true" class="bg-blue-900 text-white p-1 rounded px-4">Get Started</button>
+       </div>
         <div class="overflow-auto">
           <table class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg overflow-hidden text-center">
-            <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-              <tr>
-                <th class="px-4 py-2">Type</th>
-                <th class="px-4 py-2">Destination</th>
-                <th class="px-4 py-2">Goods</th>
-                <th class="px-4 py-2">CBM</th>
-                <th class="px-4 py-2">Weight/Pieces</th>
-                <th class="px-4 py-2">Cost (USD)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Sea Freight Row -->
-              <tr class="bg-white border-t">
-                <td class="px-4 py-2 font-medium text-blue-600">Sea Freight</td>
-                <td class="px-4 py-2" x-text="location"></td>
-                <td class="px-4 py-2" x-text="goodsType"></td>
-                <td class="px-4 py-2" x-text="cbm"></td>
-                <td class="px-4 py-2" x-text="weight"></td>
-                <td class="px-4 py-2 font-bold text-blue-600">$<span x-text="seaCost"></span></td>
-              </tr>
-              <!-- Air Freight Row -->
-              <tr class="bg-gray-50 border-t">
-                <td class="px-4 py-2 font-medium text-green-600">Air Freight</td>
-                <td class="px-4 py-2" x-text="location"></td>
-                <td class="px-4 py-2" x-text="goodsType"></td>
-                <td class="px-4 py-2">-</td>
-                <td class="px-4 py-2" x-text="(goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop') ? pieces : weight"></td>
-                <td class="px-4 py-2 font-bold text-green-600">$<span x-text="airCost"></span></td>
-              </tr>
-            </tbody>
+           <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+  <tr>
+    <th class="px-4 py-2">Mode</th>
+    <th class="px-4 py-2">Destination</th>
+    <th class="px-4 py-2">Goods</th>
+    <th class="px-4 py-2">CBM</th>
+    <th class="px-4 py-2">Weight/Pieces</th>
+    <th class="px-4 py-2">Rate</th> <!-- ✅ new column -->
+    <th class="px-4 py-2">Cost (USD)</th>
+  </tr>
+</thead>
+<tbody>
+  <tr class="bg-white border-t">
+    <td class="px-4 py-2 font-medium text-blue-600" x-text="mode"></td>
+    <td class="px-4 py-2" x-text="location"></td>
+    <td class="px-4 py-2 capitalize" x-text="goodsType"></td>
+    <td class="px-4 py-2" x-text="cbm ? cbm : '-'"></td>
+    <td class="px-4 py-2" x-text="(weight ? weight+' kg' : (pieces ? pieces+' pcs' : '-'))"></td>
+    <td class="px-4 py-2" x-text="'$'+rate"></td> <!-- ✅ show rate -->
+    <td class="px-4 py-2 font-bold text-green-600">$<span x-text="seaCost || airCost"></span></td>
+  </tr>
+</tbody>
           </table>
         </div>
       </div>
+
     </div>
   </div>
+  <div x-show="showModal" x-cloak
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md px-2">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 mb-5 mt-5">
+    <h2 class="text-xl font-semibold">Get Started</h2>
+<p class="mb-4 text-sm">Please fill out the form below. Our team will contact you shortly to finalize the details and provide further assistance.</p>
+    <form class="space-y-4" id="contactForm">
+      <div>
+        <label class="block text-sm font-medium">Full Name</label>
+        <input type="text" class="w-full border p-2 rounded" placeholder="John Doe" name="fullName">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Email</label>
+        <input type="email" class="w-full border p-2 rounded" placeholder="me@gmail.com" name="email">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Phone Number</label>
+        <input type="number" class="w-full border p-2 rounded" placeholder="02XXXXXXXX" name="phoneNumber">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Message</label>
+        <textarea class="w-full border p-2 rounded" rows="3" placeholder="Your message" name="message"></textarea>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" @click="showModal = false" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded" id="submitBtn">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
 </section>
+
+
+<script>
+  let disclaimerShown = false; // ✅ flag to track if disclaimer has been shown
+
+  document.getElementById('getQuoteBtn').addEventListener('click', function(e) {
+    if (!disclaimerShown) {
+      e.preventDefault(); // stop Alpine calc from running immediately
+      Swal.fire({
+        text: 'An estimated quote is designed to give you a clear idea of the cost based on the information you provide. The final price may be adjusted once we complete a full review.',
+        icon: 'info',
+        confirmButtonText: 'Got it!'
+      }).then(() => {
+        disclaimerShown = true; 
+        // ✅ Trigger the original Alpine click again
+        e.target.click();
+      });
+    }
+  });
+
+  document.getElementById('contactForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+
+  const formData = new FormData(this);
+   console.log(formData)
+  try {
+    const response = await fetch('./customers/customer-functions/insert-prospects.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    let result;
+    const contentType = response.headers.get("Content-Type");
+
+    if (!response.ok) {
+      // Try to extract the body if it’s still JSON error
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error('Server error, invalid response');
+      }
+      throw new Error(result.errors ? result.errors.join('<br>') : 'Server error');
+    }
+
+    // Check if the response is JSON
+    if (contentType && contentType.includes("application/json")) {
+      result = await response.json();
+    } else {
+      throw new Error('Invalid response format');
+    }
+
+    if (result.success) {
+      Swal.fire({
+        icon: 'success',
+        text: 'Thank you for contacting Benjamin Cargo Logistics, our team will contact shortly!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.reset();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        html: (result.errors || ['Unknown error occurred.']).map(e => `<div>${e}</div>`).join('')
+      });
+      return;
+    }
+
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      html: err.message
+    });
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+

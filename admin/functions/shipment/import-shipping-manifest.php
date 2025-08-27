@@ -1,5 +1,5 @@
 <?php
-require "../../includes/dbconnection.php"; // DB connection
+ include_once __DIR__ . '/../../../includes/dbconnection.php'; // DB connection
 
 if (isset($_FILES['file']['name'])) {
 
@@ -20,7 +20,7 @@ if (isset($_FILES['file']['name'])) {
 
     // Excel import
     if ($ext === 'xlsx') {
-        require '../../vendor/autoload.php';
+        require  __DIR__ . '/../../../vendor/autoload.php';
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmp);
         $sheetData = $spreadsheet->getActiveSheet()->toArray();
         unset($sheetData[0]); // remove header row
@@ -32,7 +32,7 @@ if (isset($_FILES['file']['name'])) {
             $number_of_pieces    = (int)$row[3];
             $volume_cbm          = (float)$row[4];
             $express_tracking_no = trim($row[5]);
-
+            $eta = date('Y-m-d', strtotime($row[6]));
             // Lookup customer by code
             $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
             $stmt->execute([$file_code]);
@@ -48,8 +48,8 @@ if (isset($_FILES['file']['name'])) {
 
             if (!isDuplicate($dbh, $customer_id, $entry_date)) {
                 $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-                    (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no, eta)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([
                     $customer_id,
                     $shipping_mark,
@@ -57,8 +57,22 @@ if (isset($_FILES['file']['name'])) {
                     $package_name,
                     $number_of_pieces,
                     $volume_cbm,
-                    $express_tracking_no
+                    $express_tracking_no,
+                    $eta
                 ]);
+                $manifestId = $dbh->lastInsertId();
+
+if ($manifestId) {
+    $trackStmt = $dbh->prepare("
+        INSERT INTO tracking_history (shipping_manifest_id, status, tracking_message) 
+        VALUES (?, ?, ?)
+    ");
+    $trackStmt->execute([
+        $manifestId,                       // ✅ valid FK reference
+        'shipments received',              // default
+        'Shipments have been received'     // message
+    ]);
+}
                 $inserted++;
             } else {
                 $skipped++;
@@ -75,12 +89,12 @@ if (isset($_FILES['file']['name'])) {
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 $file_code           = trim($row[0]);
-                $entry_date          = date('Y-m-d', strtotime($row[1]));
+                $entry_date          = date('d-m-Y', strtotime($row[1]));
                 $package_name        = trim($row[2]);
                 $number_of_pieces    = (int)$row[3];
                 $volume_cbm          = (float)$row[4];
                 $express_tracking_no = trim($row[5]);
-
+                 $eta = date('d-m-Y', strtotime($row[6]));
                 $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
                 $stmt->execute([$file_code]);
                 $customer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -95,8 +109,8 @@ if (isset($_FILES['file']['name'])) {
 
                 if (!isDuplicate($dbh, $customer_id, $entry_date)) {
                     $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-                        (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)");
+                        (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no, eta)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
                     $stmt->execute([
                         $customer_id,
                         $shipping_mark,
@@ -104,8 +118,18 @@ if (isset($_FILES['file']['name'])) {
                         $package_name,
                         $number_of_pieces,
                         $volume_cbm,
-                        $express_tracking_no
+                        $express_tracking_no,
+                        $eta
                     ]);
+               $trackStmt = $dbh->prepare("
+        INSERT INTO tracking_history (shipping_manifest_id, status, tracking_message) 
+        VALUES (?, ?, ?)
+    ");
+    $trackStmt->execute([
+        $shipping_mark,  // <- your chosen reference ID
+        'shipments received',
+        'shipments has been received'
+    ]);
                     $inserted++;
                 } else {
                     $skipped++;

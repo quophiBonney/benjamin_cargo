@@ -6,7 +6,7 @@ error_reporting(0);
 ini_set('display_errors', 0);
 
 try {
-    include('../../includes/dbconnection.php');
+   include_once __DIR__ . '/../../../includes/dbconnection.php';
 
     $response = ['success' => false];
     $errors = [];
@@ -51,7 +51,7 @@ try {
             'success' => true,
             'message' => 'Login successful!',
             'role' => $_SESSION['role'],
-            'redirect' => in_array($_SESSION['role'], ['admin', 'manager']) ? 'all-shipments.php' : 'staffs-dashboard.php'
+            'redirect' => in_array($_SESSION['role'], ['admin', 'manager', 'accountant']) ? 'dashboard.php' : 'staffs-dashboard.php'
         ]);
     } else {
         echo json_encode([

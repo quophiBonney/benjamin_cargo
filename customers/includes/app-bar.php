@@ -1,5 +1,6 @@
 <?php
-include_once 'dbconnection.php';
+ include_once __DIR__ . '/../../includes/dbconnection.php';
+
 
 if (!isset($_SESSION['casaid'])) {
     $client_name = 'Guest';

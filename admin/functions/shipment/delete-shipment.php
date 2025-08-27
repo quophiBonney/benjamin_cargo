@@ -4,13 +4,13 @@ $userID = $_SESSION['employee_id'] ?? null;
 if (!$userID) {
     $errors[] = "Unauthorized request. Please log in.";
 }
-include_once '../../includes/dbconnection.php';
+ include_once __DIR__ . '/../../../includes/dbconnection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $employeeId = $_POST['id'] ?? null;
+    $shippingId = $_POST['id'] ?? null;
 
-    if ($employeeId) {
-        $stmt = $dbh->prepare("DELETE FROM shipments WHERE shipment_id = :id");
-        $stmt->bindParam(':id', $employeeId, PDO::PARAM_INT);
+    if ($shippingId) {
+        $stmt = $dbh->prepare("DELETE FROM shipping_manifest WHERE id = :id");
+        $stmt->bindParam(':id', $shippingId, PDO::PARAM_INT);
         if ($stmt->execute()) {
             echo json_encode(['success' => true]);
             exit;

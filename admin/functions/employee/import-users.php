@@ -1,5 +1,5 @@
 <?php
-require "../../includes/dbconnection.php"; // DB connection
+ include_once __DIR__ . '/../../../includes/dbconnection.php';// DB connection
 
 if (isset($_FILES['file']['name'])) {
     $fileName = $_FILES['file']['name'];
@@ -11,10 +11,10 @@ if (isset($_FILES['file']['name'])) {
 
     // Excel Import
     if ($ext === 'xlsx') {
-        require '../../vendor/autoload.php'; // PhpSpreadsheet
+         require  __DIR__ . '/../../../vendor/autoload.php';// PhpSpreadsheet
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmp);
         $sheetData = $spreadsheet->getActiveSheet()->toArray();
-        unset($sheetData[0]); // remove header row
+        unset($sheetData[0]);
 
         foreach ($sheetData as $row) {
             $full_name     = trim($row[0]);

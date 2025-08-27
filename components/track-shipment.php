@@ -5,7 +5,7 @@ if (!isset($_SESSION['casaid'])) {
     exit();
 }
 
-include_once '../admin/includes/dbconnection.php';
+ include_once __DIR__ . '/../includes/dbconnection.php';
 header('Content-Type: application/json');
 
 // ✅ Get tracking number from POST

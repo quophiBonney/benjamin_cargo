@@ -9,9 +9,9 @@ body {
   background-position: center center;
   background-attachment: fixed;
 }
-.tracking-hero-bg {
+.about-hero-bg {
   background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-    url("../assets/port.jpg");
+    url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;

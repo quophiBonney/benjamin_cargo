@@ -12,12 +12,12 @@
     <div class="flex flex-col md:flex-row gap-4 md:justify-center">
       
       <!-- Discover More Button -->
-      <a href="#" class="border-4 border-blue-900 bg-blue-900 px-6 py-3 md:px-8 md:py-4 text-white text-center text-lg font-semibold hover:bg-blue-800 transition duration-300">
+      <a href="about-us.php" class="border-4 border-blue-900 bg-blue-900 px-6 py-3 md:px-8 md:py-4 text-white text-center text-lg font-semibold hover:bg-blue-800 transition duration-300">
         Discover More
       </a>
 
       <!-- Explore More Button -->
-      <a href="#" class="border-4 border-white px-6 py-3 md:px-8 md:py-4 text-white text-center text-lg font-semibold hover:bg-white hover:text-black transition duration-300">
+      <a href="contact.php" class="border-4 border-white px-6 py-3 md:px-8 md:py-4 text-white text-center text-lg font-semibold hover:bg-white hover:text-black transition duration-300">
         Explore More
       </a>
       

@@ -4,9 +4,9 @@ include_once 'includes/auth.php';
 $allowed_roles = ['admin', 'manager', 'hr'];
 $session_role = strtolower(trim($_SESSION['role'] ?? ''));
 ?>
-<?php include_once 'includes/sidebar.php'; ?>
-<?php include_once 'includes/header.php'; ?>
-<?php include_once 'includes/app-bar.php';?>
+<?php include_once 'templates/sidebar.php'; ?>
+<?php include_once 'templates/header.php'; ?>
+<?php include_once 'templates/app-bar.php';?>
  <main class="flex-1 md:ml-64 px-4 transition-all">
   <div class="bg-white shadow-md rounded-md p-6 mt-24">
     <h3 class="text-2xl font-semibold mb-4">Add Employee</h3>
@@ -84,7 +84,7 @@ $session_role = strtolower(trim($_SESSION['role'] ?? ''));
 </main>
 
 <!-- Scripts -->
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once 'templates/footer.php'; ?>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const addEmployeeForm = document.getElementById('addEmployeeForm');
