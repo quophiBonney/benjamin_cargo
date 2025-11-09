@@ -1,4 +1,11 @@
 <?php
+session_start();
+$userID = $_SESSION['employee_id'] ?? null;
+if (!$userID) {
+    echo json_encode(['success' => false, 'errors' => ['Unauthorized request. Please log in.']]);
+    exit;
+}
+
 include_once 'includes/auth.php';
 $allowed_roles = ['admin', 'manager', 'receptionist'];
 if (!in_array(strtolower($_SESSION['role'] ?? ''), $allowed_roles)) {

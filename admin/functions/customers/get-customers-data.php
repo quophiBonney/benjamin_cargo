@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['employee_id'])) {
+   header("Location: login.php");
+    die();
+}
   include_once __DIR__ . '/../../../includes/dbconnection.php';
 
 $filter = $_GET['filter'] ?? 'monthly';

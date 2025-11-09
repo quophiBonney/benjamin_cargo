@@ -1,5 +1,5 @@
 <?php
-session_name("CUSTOMERSESSID");
+session_name();
 session_start();
 session_unset();
 session_destroy();

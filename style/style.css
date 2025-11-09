@@ -10,10 +10,18 @@ body {
   background-attachment: fixed;
 }
 .about-hero-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
   background-size: cover;
   background-position: center center;
+  background-attachment: fixed;
+}
+.contact-hero-bg {
+  /* background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url("https://images.pexels.com/photos/6149793/pexels-photo-6149793.jpeg"); */
+  background: rgb(21, 21, 124);
+  background-size: cover;
+  background-position: top center;
   background-attachment: fixed;
 }
 .redefine-bg {
@@ -25,4 +33,39 @@ body {
 }
 .filter-container {
   backdrop-filter: blur(2px);
+}
+/* Match Google Translate dropdown to Portal button */
+#google_translate_element select,
+#google_translate_element_mobile select {
+  background: #1e1b4b !important; /* same as bg-indigo-900 */
+  color: #fff !important; /* white text */
+  border: none !important; /* remove border */
+  padding: 0.75rem 1rem !important; /* same as p-3 */
+  border-radius: 0.5rem !important; /* same as rounded */
+  font-size: 0.875rem !important; /* match text-sm */
+  line-height: 1rem !important;
+  height: auto !important;
+  width: 100% !important; /* make it fill container */
+  cursor: pointer;
+}
+
+/* Wrap container to mimic button size */
+#google_translate_element select,
+#google_translate_element_mobile select {
+  background: #1e1b4b !important; /* same as bg-indigo-900 */
+  color: #fff !important; /* white text */
+  border: none !important; /* remove border */
+  padding: 0.75rem 1rem !important; /* same as p-3 */
+  border-radius: 0.5rem !important; /* same as rounded */
+  font-size: 0.875rem !important; /* match text-sm */
+  line-height: 1rem !important;
+  width: 100% !important;
+  min-height: 70px !important;
+  cursor: pointer;
+}
+#google_translate_element,
+#google_translate_element_mobile {
+  display: inline-block;
+  min-width: 120px;
+  min-height: 50px; /* to roughly match Portal button width */
 }

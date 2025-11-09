@@ -2,8 +2,8 @@
 session_start();
 $userID = $_SESSION['employee_id'] ?? null;
 if (!$userID) {
-    echo json_encode(['success' => false, 'errors' => ['Unauthorized request. Please log in.']]);
-    exit;
+    header("Location: login.php");
+    die();
 }
 
 header('Content-Type: application/json');

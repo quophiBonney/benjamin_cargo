@@ -1,6 +1,20 @@
 <?php
+session_start();
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    header("Location: login.php");
+    die();
+    exit;
+}
 header('Content-Type: application/json');
  include_once __DIR__ . '/../../../includes/dbconnection.php'; 
+
+$allowed_roles = ['admin', 'manager', 'hr'];
+$session_role = strtolower(trim($_SESSION['role'] ?? ''));
+if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
+    header("Location: login.php");
+    exit;
+}
 
 if (!isset($_GET['id'])) {
     echo json_encode(['success' => false, 'message' => 'No shipment ID provided']);

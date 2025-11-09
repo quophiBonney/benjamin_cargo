@@ -25,7 +25,7 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
       <div class="w-full mt-3 md:mt-0">
         <p>
           Showing <span id="startCount">1</span> to <span id="endCount">50</span> of
-          <span id="totalCount">0</span> shipments
+          <span id="totalCount">0</span> customers
         </p>
       </div>
       <div class="w-full flex items-center gap-2 mt-3 md:mt-0">
@@ -58,16 +58,17 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <div class="print-area overflow-x-auto mt-6">
-      <div class="watermark" style="display:none;">Benjamin Cargo & Logistics</div>
+      <div class="watermark" style="display:none;">Benjamin Cargo Logistics</div>
       <table id="shippingManifestTable" class="table-x-auto w-full text-sm text-left text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         <thead class="bg-gray-700 text-white uppercase text-xs font-semibold border-b border-gray-300">
           <tr>
-            <th class="py-3 px-4">SN</th>
-            <th class="py-3 px-4 min-w-[160px]">Customer Name</th>
-            <th class="py-3 px-4 min-w-[180px]">Email</th>
+			  <th class="py-3 px-4 min-w-[160px]">Customer Name</th>
             <th class="py-3 px-4 min-w-[160px]">Phone Number</th>
             <th class="py-3 px-4 min-w-[130px]">Location</th>
             <th class="py-3 px-4 min-w-[120px]">Code</th>
+             <th class="py-3 px-4">Sea</th>
+                 <th class="py-3 px-4">Air</th>
+                    <th class="py-3 px-4">OTP</th>
             <th class="py-3 px-4 no-print">Actions</th>
           </tr>
         </thead>
@@ -81,12 +82,21 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <?php else: ?>
             <?php foreach ($shipments as $manifest): ?>
               <tr class="even:bg-gray-50 hover:bg-gray-100 transition duration-200">
-                <td class="py-2 px-4"><?= htmlspecialchars($manifest['sn']) ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['client_name']) ?></td>
-                <td class="py-2 px-4"><?= htmlspecialchars($manifest['email_address']) ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['phone_number']) ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['location']) ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['code']) ?></td>
+                  <td class="py-2 px-4"><?= htmlspecialchars($manifest['sea']) ?></td>
+                    <td class="py-2 px-4"><?= htmlspecialchars($manifest['air']) ?></td>
+                     <td class="py-2 px-4">
+    <?php if ($manifest['otp_code'] == ''): ?>
+        <span class="">-</span>
+    <?php else: ?>
+        <span class="">
+            <?= htmlspecialchars($manifest['otp_code']) ?>
+        </span>
+    <?php endif; ?>
+</td>
                 <td class="py-2 flex gap-1 px-4 space-x-1 no-print">
                   <!-- Edit Button -->
                   <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 hover:cursor-pointer transition edit-btn"
@@ -126,15 +136,9 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <label for="customerName" class="block text-gray-700">Customer Name</label>
             <input type="text" id="customerName" name="clientName" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="John Doe">
           </div>
-
-          <div>
-            <label for="email" class="block text-gray-700">Email</label>
-            <input type="email" id="email" name="email" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="you@gmail.com">
-          </div>
-
           <div>
             <label for="phoneNumber" class="block text-gray-700">Phone Number</label>
-            <input type="number" id="phoneNumber" name="phoneNumber" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="02XXXXXXX">
+            <input type="text" id="phoneNumber" name="phoneNumber" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="02XXXXXXX">
           </div>
 
           <div>
@@ -145,6 +149,14 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
           <div>
             <label for="code" class="block text-gray-700">Code</label>
             <input type="text" id="code" name="code" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="BCL 001">
+          </div>
+            <div>
+            <label for="code" class="block text-gray-700">Sea</label>
+            <input type="text" id="sea" name="sea" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Yes">
+          </div>
+            <div>
+            <label for="code" class="block text-gray-700">Air</label>
+            <input type="text" id="air" name="air" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="No">
           </div>
         </div>
         <div class="mt-3 md:mt-5">
@@ -376,10 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sn').value = customer.sn || '';
     document.getElementById('customerName').value = customer.client_name || '';
     document.getElementById('location').value = customer.location || '';
-    document.getElementById('email').value = customer.email_address || '';
     document.getElementById('phoneNumber').value = customer.phone_number || '';
     document.getElementById('code').value = customer.code || '';
-
+       document.getElementById('sea').value = customer.sea || '';
+          document.getElementById('air').value = customer.air || '';
     // ensure we pass the correct primary key to PHP update endpoint
     const idToSet = customer.customer_id || customer.id || customer.customerID || '';
     ensureHiddenIdField(updateForm, idToSet);
@@ -455,9 +467,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const win = window.open('', '', 'height=800,width=1200');
     win.document.write('<html><head><title>Print</title>' + styles + '</head><body>');
     win.document.write('<div class="print-area">');
-    win.document.write('<div class="watermark">Benjamin Cargo & Logistics</div>');
+    win.document.write('<div class="watermark">Benjamin Cargo Logistics</div>');
     win.document.write('<img src="your-logo.png" style="height:60px;margin-bottom:10px;">');
-    win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo & Logistics - Customers</h3>');
+    win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo Logistics - Customers</h3>');
     win.document.write('<p style="text-align:center;font-size:12px;color:gray;">Printed on: ' + new Date().toLocaleString() + '</p>');
 
     const clone = printArea.cloneNode(true);

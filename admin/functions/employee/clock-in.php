@@ -3,8 +3,8 @@ session_start();
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['employee_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+    header("Location: login.php");
+    die();
 }
 
 include_once '../../includes/dbconnection.php';

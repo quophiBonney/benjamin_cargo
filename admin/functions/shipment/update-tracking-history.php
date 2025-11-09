@@ -1,6 +1,21 @@
 <?php
+session_start();
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    header("Location: login.php");
+    die();
+    exit;
+}
 header('Content-Type: application/json');
 include_once __DIR__ . '/../../../includes/dbconnection.php';
+
+$allowed_roles = ['admin', 'manager', 'hr'];
+$session_role = strtolower(trim($_SESSION['role'] ?? ''));
+if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
+    header("Location: login.php");
+    exit;
+}
+
 require __DIR__ . '/../../../vendor/autoload.php';
 $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
@@ -22,7 +37,7 @@ if ($status === '' || $dateSelected === '' || $trackingMessage === '') {
 }
 
 try {
-    $stmt = $dbh->prepare("SELECT id, customer_id FROM shipping_manifest WHERE eta = :dateSelected");
+    $stmt = $dbh->prepare("SELECT id, customer_id FROM shipping_manifest WHERE estimated_time_of_arrival = :dateSelected");
     $stmt->execute([':dateSelected' => $dateSelected]);
     $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -67,13 +82,11 @@ try {
         } else {
             throw new Exception("Failed to insert tracking history for shipment ID: " . $ship['id']);
         }
-
         $update->execute([
             ':status' => $status,
             ':shipping_manifest_id' => $ship['id']
         ]);
-
-        if (!empty($customerPhones[$ship['customer_id']])) {
+        if ($status !== "shipments picked up" &&  !empty($customerPhones[$ship['customer_id']])) {
             $phoneNumber = formatPhoneNumber($customerPhones[$ship['customer_id']]);
             $clientName = $customerNames[$ship['customer_id']] ?? 'Customer';
             if (sendArkeselSMS($phoneNumber, $status, $trackingMessage, $clientName)) {
@@ -102,9 +115,9 @@ function formatPhoneNumber($phone) {
 }
 
 function sendArkeselSMS($to, $status, $trackingMessage, $clientName) {
-    $apiKey = $_ENV['ARKESEL_API_KEY']; 
-    $senderId = "WasteWise";
-    $smsText = "Dear $clientName, your package is $status - $trackingMessage";
+    $apiKey = $_ENV['ARKESEL_TRACKING_API_KEY']; 
+    $senderId = "BCL";
+    $smsText = "Dear $clientName, your $status - $trackingMessage";
     $smsText = urlencode($smsText);
     $url = "https://sms.arkesel.com/sms/api?action=send-sms&api_key=$apiKey&to=$to&from=$senderId&sms=$smsText";
 
@@ -122,9 +135,7 @@ function sendArkeselSMS($to, $status, $trackingMessage, $clientName) {
             curl_close($ch);
             return false;
         }
-        
         curl_close($ch);
-        
         $result = json_decode($response, true);
         error_log("SMS API Response for $to: " . $response);
         

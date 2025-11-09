@@ -8,17 +8,19 @@ if (!isset($_SESSION['casaid'])) {
  include_once __DIR__ . '/../includes/dbconnection.php';
 header('Content-Type: application/json');
 
-// ✅ Get tracking number from POST
+// ✅ Get tracking number and ETA from POST
 $shipping_mark = $_POST['tracking_number'] ?? null;
+$eta = $_POST['eta'] ?? null;
 
-if (!$shipping_mark) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid tracking number.']);
+if (!$shipping_mark || !$eta) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid tracking number or ETA.']);
     exit;
 }
 
-// Fetch the shipment by shipping mark
-$stmt = $dbh->prepare("SELECT * FROM shipping_manifest WHERE shipping_mark = :shipping_mark");
+// Fetch the shipment by shipping mark and ETA
+$stmt = $dbh->prepare("SELECT * FROM shipping_manifest WHERE shipping_mark = :shipping_mark AND estimated_time_of_arrival = :eta");
 $stmt->bindParam(':shipping_mark', $shipping_mark);
+$stmt->bindParam(':eta', $eta);
 $stmt->execute();
 $shipment = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -29,9 +31,9 @@ if (!$shipment) {
 
 // Fetch tracking history
 $timeline_stmt = $dbh->prepare("
-    SELECT status, date 
-    FROM tracking_history 
-    WHERE shipping_manifest_id = :shipping_manifest_id 
+    SELECT status, tracking_message as description, date
+    FROM tracking_history
+    WHERE shipping_manifest_id = :shipping_manifest_id
     ORDER BY date DESC
 ");
 

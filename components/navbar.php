@@ -1,31 +1,9 @@
-<!-- Responsive scroll-aware header with hamburger menu -->
- <!-- <style>
-  #google_translate_element select {
-    background: transparent !important;
-    border: none !important;
-    font-size: 0.875rem !important; /* text-sm */
-    font-family: inherit !important;
-    color: #1f2937 !important; /* text-gray-800 */
-    padding: 0 !important;
-    outline: none !important;
-    width: 100% !important;
-    cursor: pointer;
-  }
-
-  /* Hide Google icon */
-  .goog-te-gadget-icon {
-    display: none !important;
-  }
-
-  /* Remove underline link styles */
-  #google_translate_element a {
-    text-decoration: none !important;
-    color: inherit !important;
-  }
-</style> -->
 <header 
   x-data="{ scrolled: false, open: false }" 
-  x-init="window.addEventListener('scroll', () => scrolled = window.scrollY > 10)" 
+  x-init="
+    window.addEventListener('scroll', () => scrolled = window.scrollY > 10);
+    $watch('open', v => { if (v) setTimeout(moveGT, 0) }); /* ensure the widget moves into the dropdown when it opens */
+  " 
   :class="scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'" 
   class="fixed top-0 left-0 w-full z-50 transition-all duration-700 ease-in-out"
 >
@@ -36,7 +14,7 @@
 
       <!-- Logo -->
       <div>
-        <a href="index.php">
+        <a href="">
           <img src="assets/logo.png" alt="Benjamin Cargo & Logistics" class="w-20 h-auto" />
         </a>
       </div>
@@ -44,16 +22,17 @@
       <!-- Desktop Menu -->
       <div class="hidden md:flex gap-6 text-sm font-medium items-center">
         <a href="index.php" class="hover:text-blue-700 transition duration-300">Home</a>
-       <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
-         <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
-       <a href="customers/login.php" target="_blank" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
+        <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
+        <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
+        <a href="customers/login.php" target="_blank" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
 
-        <!-- Language Switcher -->
-       <!-- <div 
-  id="google_translate_element" 
-  class="relative inline-block bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm min-w-[160px]
-         shadow-sm hover:shadow-md transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500"
-></div> -->
+        <!-- Single Google Translate widget lives here on desktop -->
+        <div id="gt-desktop" class="relative inline-block">
+          <div 
+            id="google_translate_element" 
+            class="bg-white border border-gray-200 rounded-lg px-3 text-sm min-w-[160px] transition-all duration-300 focus-within:ring-2 focus-within:ring-blue-500">
+          </div>
+        </div>
       </div>
 
       <!-- Hamburger (Mobile) -->
@@ -77,36 +56,46 @@
     <div x-show="open" x-transition class="md:hidden mt-2 rounded bg-white w-full text-black px-4 py-3 space-y-3">
       <a href="index.php" class="block hover:text-blue-700 transition duration-300">Home</a>
       <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
-       <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
+      <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
       <a href="customers/login.php" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
 
-      <!-- Mobile Language Switcher -->
-      <div id="google_translate_element_mobile" class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
+      <!-- When mobile menu opens, we MOVE the same widget here -->
+      <div id="gt-mobile" class="border border-gray-300 rounded-md px-2 py-1 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"></div>
     </div>
   </div>
 </header>
-
 <!-- Google Translate Script -->
-<script>
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    includedLanguages: 'en,zh-CN',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-  }, 'google_translate_element');
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  // Duplicate for mobile
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    includedLanguages: 'en,zh-CN',
-    layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-  }, 'google_translate_element_mobile');
-}
-</script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-<!-- Scroll behavior -->
+<!-- Optional scroll class tweaks (kept from your original) -->
 <script>
+   window.googleTranslateElementInit = function () {
+    new google.translate.TranslateElement({
+      pageLanguage: 'en',
+      includedLanguages: 'en,zh-CN',
+      layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+
+    // After init, place the widget where it should be for the current viewport
+    moveGT();
+  };
+
+  // Move the single widget between desktop & mobile placeholders
+  function moveGT() {
+    var gt = document.getElementById('google_translate_element');
+    var desktopWrap = document.getElementById('gt-desktop');
+    var mobileWrap = document.getElementById('gt-mobile');
+
+    if (!gt || !desktopWrap || !mobileWrap) return;
+
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      if (gt.parentElement !== desktopWrap) desktopWrap.appendChild(gt);
+    } else {
+      if (gt.parentElement !== mobileWrap) mobileWrap.appendChild(gt);
+    }
+  }
+
+  window.addEventListener('resize', moveGT);
   const nav = document.querySelector('header nav');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 10) {

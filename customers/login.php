@@ -1,12 +1,12 @@
 <?php include './includes/header-two.php'; ?>
 <body class="customer-landing-page-background min-h-screen bg-slate-100">
   <div class="h-screen flex justify-center items-center px-4">
-    <div class="bg-white shadow-lg rounded-xl w-full md:w-[50%] lg:w-[40%] p-6">
+    <div class="bg-white shadow-lg rounded-xl w-full md:w-[50%] lg:w-[40%] p-3 md:p-6">
       <div class="flex flex-col justify-center items-center text-slate-800 mb-6">
         <h1 class="text-2xl font-bold">Welcome Back</h1>
         <?php 
           // Escape env variable to prevent XSS if attacker injects markup
-          $brand = getenv('WasteWise') ?: '';
+          $brand = getenv('BenjaminCargo') ?: '';
           echo htmlspecialchars($brand, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         ?>
         <p class="text-sm text-slate-600 text-center mt-1">
@@ -18,13 +18,15 @@
         <div>
           <label for="customerInput" class="block text-sm font-medium text-slate-700">Email or Phone Number</label>
           <input type="text" id="customerInput" name="customerInput" placeholder="Enter email or phone"
-                 class="mt-1 w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white" required />
+                 class="mt-1 w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white"/>
         </div>
-
-        <button type="submit" id="submitBtn"
+      <div class="gap-3 md:gap-0 w-full ">
+          <button type="submit" id="submitBtn"
                 class="w-full bg-indigo-700 text-white px-6 py-3 rounded-md hover:bg-indigo-800 disabled:opacity-60 disabled:cursor-not-allowed">
           Verify Your Account
         </button>
+</div>
+      
       </form>
 
       <p class="text-center text-xs text-slate-500 mt-4">
@@ -81,7 +83,6 @@
         if (result && result.success) {
           await Swal.fire({
             icon: 'success',
-            title: 'OTP Sent',
             text: escapeHTML(result.message || 'Check your inbox or phone for the code.'),
             timer: 1800,
             showConfirmButton: false

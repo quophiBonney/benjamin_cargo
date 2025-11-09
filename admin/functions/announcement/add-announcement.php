@@ -1,4 +1,9 @@
 <?php
+session_start();
+if (!isset($_SESSION['employee_id'])) {
+    header("Location: login.php");
+    die();
+}
 header('Content-Type: application/json');
 session_start();
 

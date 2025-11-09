@@ -1,5 +1,19 @@
 <?php
+session_start();
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    header("Location: login.php");
+    die();
+    exit;
+}
  include_once __DIR__ . '/../../../includes/dbconnection.php'; // DB connection
+
+ $allowed_roles = ['admin', 'manager', 'hr'];
+$session_role = strtolower(trim($_SESSION['role'] ?? ''));
+if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
+    header("Location: login.php");
+    exit;
+}
 
 if (isset($_FILES['file']['name'])) {
 
@@ -26,16 +40,25 @@ if (isset($_FILES['file']['name'])) {
         unset($sheetData[0]); // remove header row
 
         foreach ($sheetData as $row) {
-            $file_code           = trim($row[0]); // customer code from file
-            $entry_date          = date('Y-m-d', strtotime($row[1]));
-            $package_name        = trim($row[2]); // adjust if column index is different
-            $number_of_pieces    = (int)$row[3];
-            $volume_cbm          = (float)$row[4];
-            $express_tracking_no = trim($row[5]);
-            $eta = date('Y-m-d', strtotime($row[6]));
+            $receipt_number      = trim($row[0]);
+            $shipping_mark       = trim($row[1]);
+            $entry_date          = date('Y-m-d', strtotime($row[2]));
+            $package_name        = trim($row[3]);
+            $number_of_pieces    = (int)$row[4];
+            $volume_cbm          = (float)$row[5];
+			$weight              = (float)$row[6];
+            $rate                = (float)$row[7];
+            $express_tracking_no = trim($row[8]);
+            $loading_date        = date('Y-m-d', strtotime($row[9]));
+            $departure_date      = date('Y-m-d', strtotime($row[10]));;
+            $eta                 = date('Y-m-d', strtotime($row[11]));
+            $eto                 = date('Y-m-d', strtotime($row[12]));
+            $supplier_number     = trim($row[13]);
+            $note                = trim($row[14]);
+
             // Lookup customer by code
             $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
-            $stmt->execute([$file_code]);
+            $stmt->execute([$shipping_mark]);
             $customer = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$customer) {
@@ -48,17 +71,15 @@ if (isset($_FILES['file']['name'])) {
 
             if (!isDuplicate($dbh, $customer_id, $entry_date)) {
                 $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-                    (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no, eta)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    (customer_id, receipt_number, shipping_mark, entry_date, package_name, number_of_pieces,
+     volume_cbm, weight, rate, express_tracking_no, loading_date, departure_date,
+     estimated_time_of_arrival, estimated_time_of_offloading, supplier_number, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
                 $stmt->execute([
-                    $customer_id,
-                    $shipping_mark,
-                    $entry_date,
-                    $package_name,
-                    $number_of_pieces,
-                    $volume_cbm,
-                    $express_tracking_no,
-                    $eta
+                    $customer_id, $receipt_number, $shipping_mark, $entry_date, $package_name,
+                    $number_of_pieces, $volume_cbm, $weight, $rate, $express_tracking_no, $loading_date,
+                    $departure_date, $eta, $eto, $supplier_number, $note
                 ]);
                 $manifestId = $dbh->lastInsertId();
 
@@ -88,15 +109,23 @@ if ($manifestId) {
             fgetcsv($handle); // skip header row
 
             while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-                $file_code           = trim($row[0]);
-                $entry_date          = date('d-m-Y', strtotime($row[1]));
-                $package_name        = trim($row[2]);
-                $number_of_pieces    = (int)$row[3];
-                $volume_cbm          = (float)$row[4];
-                $express_tracking_no = trim($row[5]);
-                 $eta = date('d-m-Y', strtotime($row[6]));
+            $receipt_number      = trim($row[0]);
+            $shipping_mark       = trim($row[1]);
+            $entry_date          = date('Y-m-d', strtotime($row[2]));
+            $package_name        = trim($row[3]);
+            $number_of_pieces    = (int)$row[4];
+            $volume_cbm          = (float)$row[5];
+			$weight              = (float)$row[6];
+            $rate                = (float)$row[7];
+            $express_tracking_no = trim($row[8]);
+            $loading_date        = date('Y-m-d', strtotime($row[9]));
+            $departure_date      = date('Y-m-d', strtotime($row[10]));;
+            $eta                 = date('Y-m-d', strtotime($row[11]));
+            $eto                 = date('Y-m-d', strtotime($row[12]));
+            $supplier_number     = trim($row[13]);
+            $note                = trim($row[14]);
                 $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
-                $stmt->execute([$file_code]);
+                $stmt->execute([$shipping_mark]);
                 $customer = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if (!$customer) {
@@ -108,18 +137,16 @@ if ($manifestId) {
                 $shipping_mark = $customer['code'];
 
                 if (!isDuplicate($dbh, $customer_id, $entry_date)) {
-                    $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-                        (customer_id, shipping_mark, entry_date, package_name, number_of_pieces, volume_cbm, express_tracking_no, eta)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                   $stmt = $dbh->prepare("INSERT INTO shipping_manifest
+    (customer_id, receipt_number, shipping_mark, entry_date, package_name, number_of_pieces,
+     volume_cbm, weight, rate, express_tracking_no, loading_date, departure_date,
+     estimated_time_of_arrival, estimated_time_of_offloading, supplier_number, note)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
                     $stmt->execute([
-                        $customer_id,
-                        $shipping_mark,
-                        $entry_date,
-                        $package_name,
-                        $number_of_pieces,
-                        $volume_cbm,
-                        $express_tracking_no,
-                        $eta
+                        $customer_id, $receipt_number, $shipping_mark, $entry_date, $package_name,
+                        $number_of_pieces, $volume_cbm, $weight, $rate, $express_tracking_no, $loading_date,
+                        $departure_date, $eta, $eto, $supplier_number, $note
                     ]);
                $trackStmt = $dbh->prepare("
         INSERT INTO tracking_history (shipping_manifest_id, status, tracking_message) 

@@ -54,7 +54,7 @@ Print
   </div>
   </div>
     <div class="print-area overflow-x-auto mt-6">
-      <div class="watermark" style="display:none;">Benjamin Cargo & Logistics</div>
+      <div class="watermark" style="display:none;">Benjamin Cargo Logistics</div>
 <table id="shippingManifestTable" class="table-x-auto w-full text-sm text-left text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
     <thead class="bg-gray-700 text-white uppercase text-xs font-semibold border-b border-gray-300">
         <tr>

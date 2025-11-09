@@ -64,6 +64,9 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <button onclick="printTable()" class="border border-gray-500 text-gray-500 p-2 rounded hover:bg-gray-600 hover:text-white">
           Print
         </button>
+        <button onclick="window.location.reload()" class="border border-gray-500 text-gray-500 p-2 rounded hover:bg-gray-600 hover:text-white">
+          Reset
+        </button>
       </div>
       <div class="w-full mt-5 md:mt-0">
         <input type="search" id="searchInput" placeholder="Search by name or number..."
@@ -73,18 +76,20 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Shipments Table -->
     <div class="print-area overflow-x-auto mt-6">
-      <div class="watermark" style="display:none;">Benjamin Cargo & Logistics</div>
+      <div class="watermark" style="display:none;">Benjamin Cargo Logistics</div>
       <table id="shippingManifestTable" class="w-full text-sm text-left text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
         <thead class="bg-gray-700 text-white uppercase text-xs font-semibold border-b border-gray-300">
           <tr>
-            <th class="py-3 px-4 min-w-[160px]">Shipping Mark</th>
+            <th class="py-3 px-4 min-w-[120px]">Code</th>
+            <th class="py-3 px-4 min-w-[120px]">Receipt No.</th>
             <th class="py-3 px-4 min-w-[160px]">Entry Date</th>
             <th class="py-3 px-4 min-w-[180px]">Package Name</th>
-            <th class="py-3 px-4 min-w-[130px]">No. of Pieces</th>
+            <th class="py-3 px-4">Pieces</th>
             <th class="py-3 px-4">CBM</th>
-             <th class="py-3 px-4 min-w-[120px]">ETA</th>
+            <th class="py-3 px-4 min-w-[130px]">Loading Date</th>
+             <th class="py-3 px-4 min-w-[130px]">ETA</th>
             <th class="py-3 px-4 min-w-[180px]">Status</th>
-            <th class="py-3 px-4">Action</th>
+            <th class="no-print py-3 px-4">Action</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -96,13 +101,38 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($shipments as $manifest): ?>
               <tr class="even:bg-gray-50 hover:bg-gray-100 transition duration-200">
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['shipping_mark'] ?? '') ?></td>
+                <td class="py-2 px-4"><?= htmlspecialchars($manifest['receipt_number'] ?? '') ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['entry_date'] ?? '') ?></td>
-                <td class="py-2 px-4"><?= htmlspecialchars($manifest['package_name'] ?? '') ?></td>
+                <td class="py-2 px-4 capitalize"><?= htmlspecialchars($manifest['package_name'] ?? '') ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['number_of_pieces'] ?? '') ?></td>
                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['volume_cbm'] ?? '') ?></td>
-                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['eta'] ?? '') ?></td>
-                <td class="py-2 px-4"><?= htmlspecialchars($manifest['status'] ?? '') ?></td>
-                <td class="flex gap-1 py-2 px-4">
+                <td class="py-2 px-4"><?= htmlspecialchars($manifest['loading_date'] ?? '') ?></td>
+                 <td class="py-2 px-4"><?= htmlspecialchars($manifest['estimated_time_of_arrival'] ?? '') ?></td>
+                 <td class="py-2 px-4">
+    <?php if ($manifest['status'] == "shipments received"): ?>
+        <span class="text-gray-500 font-bold capitalize">
+            <?= htmlspecialchars($manifest['status'] ?? '') ?>
+        </span>
+    <?php elseif ($manifest['status'] == "shipments in transit"): ?>
+        <span class="text-blue-800 font-bold capitalize">
+            <?= htmlspecialchars($manifest['status'] ?? '') ?>
+        </span>
+    <?php elseif ($manifest['status'] == "shipments has arrived at the Port undergoing clearance"): ?>
+        <span class="text-orange-500 animate-bounce font-bold capitalize">
+            <?= htmlspecialchars($manifest['status'] ?? '') ?>
+        </span>
+    <?php elseif ($manifest['status'] == "shipments arrived at Benjamin Cargo Logistics Warehouse"): ?>
+        <span class="text-blue-500 font-bold capitalize">
+            <?= htmlspecialchars($manifest['status'] ?? '') ?>
+        </span>
+    <?php elseif ($manifest['status'] == "shipments picked up"): ?>
+        <span class="text-green-500 font-bold capitalize">
+            <?= htmlspecialchars($manifest['status'] ?? '') ?>
+        </span>
+    <?php endif; ?>
+</td>
+
+                <td class="no-print flex gap-1 py-2 px-4">
                   <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 hover:cursor-pointer transition edit-btn" data-manifest='<?= htmlspecialchars(json_encode($manifest), ENT_QUOTES) ?>'><i class="fas fa-edit"></i></button>
                   <button class="hover:cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600 transition delete-btn" data-id="<?= htmlspecialchars($manifest['id'] ?? '') ?>"><i class="fa fa-trash" aria-hidden="true"></i></button>
             </td>
@@ -172,13 +202,17 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
   </div>
 
    <div id="updatePackingList" class="fixed inset-0 hidden z-50 bg-gray-400/10 backdrop-blur-md flex items-center justify-center">
-    <div class="mx-3 bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl relative max-h-screen overflow-y-auto">
+    <div class="mx-3 bg-white p-6 rounded-lg shadow-lg w-full max-w-4xl relative max-h-screen overflow-y-auto">
       <button onclick="closePackingListModal()" class="absolute bg-red-500 w-8 h-8 rounded text-white top-2 right-2 hover:cursor-pointer">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <h2 class="text-xl font-bold mb-4">Packing List Update</h2>
       <form id="packingListForm">
-        <div class="grid grid-cols-2 gap-5 mb-3">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-5 mb-3">
+               <div class="">
+ <label for="receiptNumber" class="block text-gray-700">Receipt Number</label>
+   <input type="numbr" id="receipt_number" name="receipt_number" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+            </div>
           <div class="">
  <label for="shippingMark" class="block text-gray-700">Shipping Mark</label>
    <input type="text" id="shippingMark" name="shippingMark" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
@@ -187,9 +221,21 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
  <label for="entryDate" class="block text-gray-700">Entry Date</label>
    <input type="date" id="entryDate" name="entryDate" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
             </div>
+            <div class="">
+ <label for="loadingDate" class="block text-gray-700">Loading Date</label>
+   <input type="date" id="loadingDate" name="loadingDate" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+            </div>
+            <div class="">
+ <label for="eta" class="block text-gray-700">Departure Date</label>
+   <input type="date" id="departure_date" name="departure_date" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+            </div>
              <div class="">
  <label for="eta" class="block text-gray-700">ETA</label>
    <input type="date" id="eta" name="eta" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+            </div>
+            <div class="">
+ <label for="eta" class="block text-gray-700">ETO</label>
+   <input type="date" id="eto" name="eto" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
             </div>
              <div class="">
  <label for="pieces" class="block text-gray-700">Quantity(Pieces)</label>
@@ -209,13 +255,25 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <option value="shipments picked up">Picked Up</option>
           </select>
         </div>
+          <div class="w-full">
+ <label for="packageName" class="block text-gray-700">Supplier No.</label>
+   <input type="text" id="supplier_number" name="	supplier_number" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placehoder="Supplier No."/>
             </div>
-        <div class="w-full">
+            <div class="">
+ <label for="expressTrackingNumber" class="block text-gray-700">Express Tracking Number</label>
+   <input type="number" id="expressTrackingNumber" name="expressTrackingNumber" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+            </div>
+             <div class="w-full">
+ <label for="note" class="block text-gray-700">Note</label>
+   <input type="text" id="note" name="note" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Note"/>
+    </div>
+              </div>
+              <div class="w-full">
  <label for="packageName" class="block text-gray-700">Package Name</label>
-   <input type="text" id="packageName" name="packageName" class="bg-gray-100 w-full p-2 border border-gray-300 rounded"/>
+   <textarea type="text" id="packageName" name="packageName" class="bg-gray-100 w-full p-2 border border-gray-300 rounded" placeholder="Package Name"></textarea>
             </div>
         <div class="mt-5">
-          <button type="submit" id="packingSubmitBtn" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-700">Save Changes</button>
+          <button type="submit" id="packingSubmitBtn" class="bg-gray-800 text-white px-6 py-3 rounded hover:bg-gray-700 w-full">Save Changes</button>
         </div>
       </form>
     </div>
@@ -318,6 +376,46 @@ document.addEventListener('DOMContentLoaded', () => {
     renderTable();
   });
 
+  //filtering
+  // Inside document.addEventListener('DOMContentLoaded', () => { ... });
+
+// Filtering logic
+const filterForm = document.getElementById('filteringForm');
+if (filterForm) {
+  filterForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    if (!fromDate && !toDate) {
+      // No filter → show all
+      filteredRows = [...originalRows];
+    } else {
+      filteredRows = originalRows.filter(r => {
+        // Check Entry Date (3rd column)
+        const entryDateCell = r.tr.querySelector('td:nth-child(3)');
+        if (!entryDateCell) return false;
+
+        const entryDateText = entryDateCell.textContent.trim();
+        if (!entryDateText) return false;
+
+        const entryDate = new Date(entryDateText);
+        if (isNaN(entryDate)) return false;
+
+        // Range checks
+        if (fromDate && entryDate < new Date(fromDate)) return false;
+        if (toDate && entryDate > new Date(toDate)) return false;
+
+        return true;
+      });
+    }
+
+    currentPage = 1;
+    renderTable();
+    closeFilterModal(); // Hide modal
+  });
+}
+
   // Edit buttons (each row's edit button holds the manifest payload)
   function attachEditButtons() {
     document.querySelectorAll('.edit-btn').forEach(button => {
@@ -329,13 +427,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const manifest = JSON.parse(this.dataset.manifest || '{}');
 
         // Fill modal fields (packing list modal)
+        document.getElementById('receipt_number').value = manifest.receipt_number || '';
         document.getElementById('shippingMark').value = manifest.shipping_mark || '';
+           document.getElementById('expressTrackingNumber').value = manifest.express_tracking_no || '';
         document.getElementById('entryDate').value = manifest.entry_date || '';
         document.getElementById('packageName').value = manifest.package_name || '';
-        document.getElementById('eta').value = manifest.eta || '';
+        document.getElementById('eta').value = manifest.estimated_time_of_arrival || '';
+         document.getElementById('eto').value = manifest.estimated_time_of_offloading || '';
+         document.getElementById('loadingDate').value = manifest.loading_date || '';
+         document.getElementById('departure_date').value = manifest.departure_date || '';
         document.getElementById('pieces').value = manifest.number_of_pieces || '';
         document.getElementById('cbm').value = manifest.volume_cbm || '';
         document.getElementById('packing_status').value = manifest.status || '';
+            document.getElementById('supplier_number').value = manifest.supplier_number || '';
+        
+            document.getElementById('note').value = manifest.note || '';
 
         // store the id on the form so the update endpoint knows which record to update
         document.getElementById('packingListForm').dataset.manifestId = manifest.id || '';
@@ -402,13 +508,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Tracking history update
   const trackingForm = document.getElementById('editTrackingHistoryForm');
+  const submitTracking = document.getElementById("trackingSubmitBtn"); 
+  
   if (trackingForm) {
     trackingForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-
+       Swal.fire({ title: 'Updating Tracking History...', didOpen: () => Swal.showLoading() });
       const submitBtn = document.getElementById('trackingSubmitBtn');
       submitBtn.disabled = true;
-
+    
       const formData = new FormData(this);
 
       try {
@@ -416,7 +524,6 @@ document.addEventListener('DOMContentLoaded', () => {
               method: 'POST',
               body: formData
           });
-
           const result = await response.json();
 
           if (result.success) {
@@ -430,6 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
           Swal.fire('Error', 'Something went wrong while updating statuses.', 'error');
       } finally {
           submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
       }
     });
   }
@@ -520,6 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
+
 // Print function
 function printTable() {
   const printArea = document.querySelector('.print-area');
@@ -529,6 +638,7 @@ function printTable() {
     <style>
       @media print {
         body { font-family: Arial, sans-serif; color: #111827; }
+        .no-print { display: none !important; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         tr:nth-child(even) { background-color: #f9fafb; }

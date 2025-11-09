@@ -5,6 +5,11 @@ header('Content-Type: application/json');
 
 include_once '../../includes/dbconnection.php';
 
+if (!isset($_SESSION['employee_id'])) {
+   header("Location: login.php");
+    die();
+}
+
 // Utility function to return JSON and exit
 function respond($success, $message = '', $extra = []) {
     echo json_encode(array_merge(['success' => $success, 'message' => $message], $extra));

@@ -5,7 +5,8 @@
   </div>
 
   <nav class="px-6 py-4 space-y-4">
-    <a href="" class="w-full flex items-center gap-3 hover:bg-gray-700 px-3 py-2 text-sm hover:bg-gray-100"> <i class="fa-solid fa-home"></i> Home</a>
+    <a href="shipping-details.php" class="w-full flex items-center gap-3 hover:bg-gray-700 px-3 py-2 text-sm hover:bg-gray-100"> <i class="fa-solid fa-home"></i> Home</a>
+     <a href="customer-review.php" class="w-full flex items-center gap-3 hover:bg-gray-700 px-3 py-2 text-sm hover:bg-gray-100"> <i class="fa-solid fa-comment"></i>Send Review</a>
    <div>
       <form method="POST" action="includes/logout.php">
       <button type="submit" class="w-full flex items-center gap-3 hover:bg-gray-700 px-3 py-2 rounded transition">

@@ -3,6 +3,8 @@ session_start();
 $userID = $_SESSION['employee_id'] ?? null;
 if (!$userID) {
     $errors[] = "Unauthorized request. Please log in.";
+    header("Location: login.php");
+    die();
 }
  include_once __DIR__ . '/../../../includes/dbconnection.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

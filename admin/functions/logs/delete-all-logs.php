@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 header('Content-Type: application/json');
 
 include_once '../../includes/dbconnection.php';

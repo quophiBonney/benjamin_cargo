@@ -1,4 +1,11 @@
 <?php
+session_start();
+$userID = $_SESSION['employee_id'] ?? null;
+if (!$userID) {
+    echo json_encode(['success' => false, 'errors' => ['Unauthorized request. Please log in.']]);
+    exit;
+}
+
 include_once 'includes/dbconnection.php'; // Ensure you include your DB connection
 
 $query = "SELECT 

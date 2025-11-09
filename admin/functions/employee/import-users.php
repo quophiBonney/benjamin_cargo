@@ -1,6 +1,11 @@
 <?php
  include_once __DIR__ . '/../../../includes/dbconnection.php';// DB connection
 
+if (!isset($_SESSION['employee_id'])) {
+    header("Location: login.php");
+    die();
+}
+
 if (isset($_FILES['file']['name'])) {
     $fileName = $_FILES['file']['name'];
     $fileTmp  = $_FILES['file']['tmp_name'];

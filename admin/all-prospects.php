@@ -51,7 +51,7 @@ Print
   </div>
   </div>
     <div class="print-area overflow-x-auto mt-6">
-      <div class="watermark" style="display:none;">Benjamin Cargo & Logistics</div>
+      <div class="watermark" style="display:none;">Benjamin Cargo Logistics</div>
 <table id="shippingManifestTable" class="table-x-auto w-full text-sm text-left text-gray-700 border border-gray-200 rounded-lg overflow-hidden shadow-sm">
     <thead class="bg-gray-700 text-white uppercase text-xs font-semibold border-b border-gray-300">
         <tr>
@@ -614,9 +614,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const win = window.open('', '', 'height=800,width=1200');
     win.document.write('<html><head><title>Print</title>' + styles + '</head><body>');
     win.document.write('<div class="print-area">');
-    win.document.write('<div class="watermark">Benjamin Cargo & Logistics</div>');
+    win.document.write('<div class="watermark">Benjamin Cargo Logistics</div>');
     win.document.write('<img src="your-logo.png" style="height:60px;margin-bottom:10px;">');
-    win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo & Logistics - Customers</h3>');
+    win.document.write('<h3 style="text-align:center;margin:5px 0;">Benjamin Cargo Logistics - Customers</h3>');
     win.document.write('<p style="text-align:center;font-size:12px;color:gray;">Printed on: ' + new Date().toLocaleString() + '</p>');
     // clone the table to avoid moving nodes out of document
     const clone = printArea.cloneNode(true);

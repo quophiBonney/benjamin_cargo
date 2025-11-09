@@ -1,11 +1,11 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['employee_id'])) {
+if (!isset($_SESSION['customer_id'])) {
     header("Location: login.php");
     exit;
 }
 
-function hasRole($roles) {
-    return in_array($_SESSION['role'], (array) $roles);
-}
+// function hasRole($roles) {
+//     return in_array($_SESSION['role'], (array) $roles);
+// }

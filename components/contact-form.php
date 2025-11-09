@@ -1,34 +1,39 @@
-<div class="px-6 md:px-14 grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-    <div>
-        <img src="./assets/virtual-assistant.png" alt="" class="h-full w-full"/>
-</div>
-<div>
-    <div class="text-center">
-        <h3 class="text-2xl font-bold uppercase">Get Intouch With Us</h3>
-        <p>We are excited to talk to you and also get you satisfied</p>
-</div>
-    <form class="space-y-4" id="contactForm">
-        <div>
-            <label for="name" class="text-sm text-gray-700 font-medium mb-1 block">Name</label>
-            <input type="text" id="fullName" name="fullName" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
-</div>
- <div>
-            <label for="email" class="text-sm text-gray-700 font-medium mb-1 block">Email</label>
-            <input type="text" id="email" name="email" placeholder="you@gmail.com" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
-</div>
- <div>
-            <label for="contact" class="text-sm text-gray-700 font-medium mb-1 block">Phone Number</label>
-            <input type="number" id="phoneNumber" name="phoneNumber" placeholder="05XXXXXXXX" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
-</div>
- <div>
-            <label for="message" class="text-sm text-gray-700 font-medium mb-1 block">Message</label>
-            <textarea id="message" name="message" placeholder="How may we help your?" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" rows="4"></textarea>
-</div>
-    <div>
-        <input type="submit" value="Send Message" class="w-full bg-blue-900 text-white p-3 rounded hover:bg-blue-800 transition duration-300 cursor-pointer" id="submitBtn"/>
-</div>
-</form>
-</div>
+<div class="px-5 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mt-16">
+    <!-- Left Side (Professional Image Banner) -->
+    <div class="">
+         <img src="https://images.pexels.com/photos/8815888/pexels-photo-8815888.jpeg" 
+             alt="Benjamin Cargo Logistics Customer Support" 
+             class="w-full h-full object-fit">
+    </div>
+
+    <!-- Right Side (Contact Form) -->
+    <div class="h-full">
+        <div class="text-center">
+            <h3 class="text-2xl font-bold uppercase">Get In Touch With Us</h3>
+            <p>We are excited to talk to you and also get you satisfied</p>
+        </div>
+        <form class="space-y-4" id="contactForm">
+            <div>
+                <label for="name" class="text-sm text-gray-700 font-medium mb-1 block">Name</label>
+                <input type="text" id="fullName" name="fullName" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
+            </div>
+            <div>
+                <label for="email" class="text-sm text-gray-700 font-medium mb-1 block">Email</label>
+                <input type="text" id="email" name="email" placeholder="you@gmail.com" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
+            </div>
+            <div>
+                <label for="contact" class="text-sm text-gray-700 font-medium mb-1 block">Phone Number</label>
+                <input type="number" id="phoneNumber" name="phoneNumber" placeholder="05XXXXXXXX" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" />
+            </div>
+            <div>
+                <label for="message" class="text-sm text-gray-700 font-medium mb-1 block">Message</label>
+                <textarea id="message" name="message" placeholder="How may we help you?" class="w-full p-3 border border-gray-300 rounded focus:ring-blue-500" rows="4"></textarea>
+            </div>
+            <div>
+                <input type="submit" value="Send Message" class="w-full bg-blue-900 text-white p-3 rounded hover:bg-blue-800 transition duration-300 cursor-pointer" id="submitBtn"/>
+            </div>
+        </form>
+    </div>
 </div>
 <script>
       document.getElementById('contactForm').addEventListener('submit', async function(e) {
@@ -72,7 +77,6 @@
         showConfirmButton: false
       });
       this.reset();
-       document.querySelector('[x-data]').__x.$data.showModal = false;
     } else {
       Swal.fire({
         icon: 'error',

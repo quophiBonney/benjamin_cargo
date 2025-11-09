@@ -35,7 +35,7 @@ button {
   background-color: #f9f9f9;
 }
 .login-form-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
     url("../assets/benjamin_cargo_1.jpg");
   background-size: cover;
   background-attachment: fixed;
@@ -52,7 +52,7 @@ button {
   background-attachment: fixed;
 }
 .otp-verification-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.7)),
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
     url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
   backdrop-filter: blur(2px);
   background-size: cover;

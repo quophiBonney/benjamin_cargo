@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['employee_id'])) {
+    header("Location: login.php");
+    die();
+}
 ob_clean();
 header('Content-Type: application/json');
 
@@ -30,7 +34,8 @@ $email = trim($_POST['email'] ?? '');
 $code = trim($_POST['code'] ?? '');
 $location = trim($_POST['location'] ?? '');
 $phoneNumber = trim($_POST['phoneNumber'] ?? '');
-$password = trim($_POST['password'] ?? ''); // Optional
+$sea = trim($_POST['sea']);
+$air = trim($_POST['air']);
 
 // Validation: Required fields except password
 $requiredFields = [
@@ -41,6 +46,8 @@ $requiredFields = [
     'location' => $location,
     'code' => $code,
     'phoneNumber' => $phoneNumber,
+    'sea' => $sea,
+    'air' => $air
 ];
 
 $missing = [];
@@ -59,7 +66,9 @@ $updateQuery = "UPDATE customers SET
     email_address = ?, 
     phone_number = ?,
     location = ?, 
-    code = ?";
+    code = ?,
+    sea = ?,
+    air = ?";
 
 $params = [
     $sn,
@@ -67,7 +76,9 @@ $params = [
     $email,
     $phoneNumber,
     $location,
-    $code
+    $code,
+    $sea,
+    $air
 ];
 
 $updateQuery .= " WHERE customer_id = ?";

@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 ob_start();
 header('Content-Type: application/json');
 error_reporting(0);

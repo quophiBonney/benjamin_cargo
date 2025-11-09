@@ -1,10 +1,10 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 flex justify-center items-center">
-    <div class="bg-blue-900 flex flex-col justify-center items-center h-screen">
+    <div class="bg-indigo-900 flex flex-col justify-center items-center h-screen">
       <div class="px-5">
-        <div class="w-16 h-16 bg-white text-blue-900 rounded-full p-3">
+        <div class="w-16 h-16 bg-white text-indigo-900 rounded-full p-3">
          <img src="./assets/quote-icon.png" alt=""/> 
          </div>
-         <p class="mt-10 text-sm md:text-base text-white">As a first time importer from the Far East, the process can be quite daunting. John Good has provided exceptional service and support right through exceptional the process.</p>
+         <p class="mt-10 text-sm md:text-base text-white">As a first time importer from the Far East, the process can be quite daunting. Benjamin Cargo Logistics has provided exceptional service and support right through exceptional the process.</p>
      <div class="mt-10">
         <h4 class="text-2xl font-bold text-white">
             Mr. Derrick Sar 

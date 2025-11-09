@@ -1,13 +1,13 @@
 <!-- Hero Background -->
 <div class="w-full trial-bg h-screen flex flex-col justify-center">
   <div class="px-6 md:px-14 mt-24 md:mt-0 text-white">
-    <h1 class="text-2xl md:text-5xl font-bold uppercase mb-4 mt-5">Benjamin Cargo Logistics</h1>
-    <p class="text-sm md:text-md lg:text-lg lg:max-w-xl">
-    Benjamin Cargo Logistics in a Glance
-Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC) specializing in deep-sea Roll-on Roll-off (RoRo) and container shipping services. Our operations focus on key destinations in West & Middle East Africa, offering reliable and efficient transport solutions.
+    <h1 class="text-2xl md:text-4xl font-bold uppercase mb-4 mt-5 md:mt-16">Move Your Business Forward. <br/>Calculate Your Freight.</h1>
+    <p class="text-sm md:text-base lg:max-w-xl">
+      Ready to take your business to the next level? Our platform gives you the power to instantly calculate and book your cargo shipments. No more lengthy quote requests or unexpected costs. Just enter your cargo details, choose your port, and get a transparent, reliable transport fee in seconds. With Benjamin Cargo Logistics, you can focus on what you do best—growing your business—while we handle the heavy lifting.
     </p>
   </div>
 </div>
+
 <section 
  class="relative w-full overflow-hidden" 
   x-data="{ 
@@ -22,10 +22,11 @@ Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC
     cbm: 0,
     seaCost: 0,
     airCost: 0,
-     rate: 0,
+    rate: 0,
     showResult: false,
     showModal: false
 }">
+
   <div class="mt-5 z-10 px-6 md:px-16 p-10">
     <div class="bg-white rounded-lg shadow-xl p-4 md:p-8 mx-auto">
       <!-- Inputs -->
@@ -74,11 +75,10 @@ Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC
                 <option value="battery">Pure Battery</option>
               </optgroup>
             </template>
+            <!-- ✅ Air Normal strictly Normal only -->
             <template x-if="mode==='Air-Normal'">
               <optgroup label="Air Normal">
                 <option value="normal">Normal Goods</option>
-                <option value="special">Special Goods</option>
-                <option value="battery">Battery Goods</option>
               </optgroup>
             </template>
           </select>
@@ -102,6 +102,14 @@ Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC
           </div>
         </template>
 
+        <!-- Weight for Sea -->
+        <template x-if="mode==='Sea'">
+          <div class="flex-1 min-w-[100px]">
+            <label class="block text-sm font-medium">Weight (kg)</label>
+            <input type="number" x-model="weight" class="w-full p-2 border rounded">
+          </div>
+        </template>
+
         <!-- Weight (Air per kg) -->
         <template x-if="(mode==='Air-Normal' || mode==='Air-Express') && (goodsType==='normal' || goodsType==='special' || goodsType==='battery')">
           <div class="flex-1 min-w-[100px]">
@@ -119,135 +127,145 @@ Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC
         </template>
 
         <!-- Button -->
-       <!-- Button -->
-<div class="min-w-[150px]">
-  <button @click="
-    if(location && mode && goodsType){
-       seaCost = 0; airCost = 0; cbm = 0;
+        <div class="min-w-[150px]">
+         <button @click="
+  if(location && mode && goodsType){
+    seaCost = 0; airCost = 0; cbm = 0; rate = 0;
 
-      // SEA CALCULATION
-      if(mode==='Sea'){
-        let rawCbm = (length/100 * width/100 * height/100);
-        if(rawCbm < 0.1) rawCbm = 0.1; // minimum CBM
-        cbm = rawCbm; // keep numeric
+    // SEA CALCULATION
+    if(mode==='Sea'){
+      let rawCbm = (length/100 * width/100 * height/100);
+      if(rawCbm < 0.1) rawCbm = 0.1; // minimum CBM
+      cbm = rawCbm; 
 
-        rate = 0;
-        if(goodsType==='normal') rate = 240;
-        if(goodsType==='special') rate = 250;
-        if(goodsType==='battery') rate = 270;
+      // ✅ Determine base rate by goods type + location
+      if(goodsType==='normal') rate = (location==='Kumasi') ? 260 : 240;
+      if(goodsType==='special') rate = (location==='Kumasi') ? 270 : 250;
+      if(goodsType==='battery') rate = (location==='Kumasi') ? 280 : 270;
 
-        seaCost = (rawCbm * rate).toFixed(2);
-      }
+      // ✅ Chargeable CBM is max(rawCbm, ceil(weight/500))
+      let chargeableCbm = Math.max(rawCbm, Math.ceil(weight/500));
+      seaCost = (chargeableCbm * rate).toFixed(2);
+    }
 
-      // AIR NORMAL
-      if(mode==='Air-Normal'){
-        rate = 0;
-        if(goodsType==='normal') rate = 20;
-        if(goodsType==='special') rate = 22;
-        if(goodsType==='battery') rate = 50; 
+    // AIR NORMAL
+    if(mode==='Air-Normal'){
+      if(goodsType==='normal'){
+        rate = (location==='Kumasi') ? 22 : 20;
         airCost = (weight * rate).toFixed(2);
       }
-
-      // AIR EXPRESS
-      if(mode==='Air-Express'){
-        rate = 0;
-        if(goodsType==='normal') rate = 20;
-        if(goodsType==='special') rate = 22;
-        if(goodsType==='battery') rate = 50;
-        if(goodsType==='phone') rate = 25;
-        if(goodsType==='tablet') rate = 30;
-        if(goodsType==='laptop') rate = 50;
-
-        if(goodsType==='phone' || goodsType==='tablet' || goodsType==='laptop'){
-          airCost = (pieces * rate).toFixed(2);
-        } else {
-          airCost = (weight * rate).toFixed(2);
-        }
-      }
-
-      showResult = true;
-    } else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Missing Information',
-        text: 'Please fill all required fields before getting a quote.'
-      });
     }
-  " 
-  class="bg-blue-900 text-white p-2 rounded w-full lg:mt-5" id="getQuoteBtn">Get Quote</button>
-</div>
 
+    // AIR EXPRESS
+    if(mode==='Air-Express'){
+      if(goodsType==='normal'){
+        rate = (location==='Kumasi') ? 22 : 20;
+        airCost = (weight * rate).toFixed(2);
+      }
+      if(goodsType==='special'){
+        rate = (location==='Kumasi') ? 24 : 22;
+        airCost = (weight * rate).toFixed(2);
+      }
+      if(goodsType==='battery'){
+        rate = (location==='Kumasi') ? 55 : 50;
+        airCost = (weight * rate).toFixed(2);
+      }
+      if(goodsType==='phone'){
+        rate = (location==='Kumasi') ? 30 : 25;
+        airCost = (pieces * rate).toFixed(2);
+      }
+      if(goodsType==='tablet'){
+        rate = (location==='Kumasi') ? 35 : 30;
+        airCost = (pieces * rate).toFixed(2);
+      }
+      if(goodsType==='laptop'){
+        rate = (location==='Kumasi') ? 55 : 50;
+        airCost = (pieces * rate).toFixed(2);
+      }
+    }
+
+    showResult = true;
+  } else {
+    Swal.fire({
+      icon: 'error',
+      title: 'Missing Information',
+      text: 'Please fill all required fields before getting a quote.'
+    });
+  }
+" 
+          class="bg-blue-900 text-white p-2 rounded w-full lg:mt-5" id="getQuoteBtn">Get Quote</button>
         </div>
 
+      </div>
 
       <!-- Results Table -->
       <div x-show="showResult" class="mt-8">
-       <div class="flex justify-between mb-3">
+        <div class="flex justify-between mb-3">
           <h2 class="font-semibold text-lg mb-4">Freight Quote</h2>
-    <button @click="showModal = true" class="bg-blue-900 text-white p-1 rounded px-4">Get Started</button>
-       </div>
+          <button @click="showModal = true" class="bg-blue-900 text-white p-1 rounded px-4">Get Started</button>
+        </div>
         <div class="overflow-auto">
           <table class="w-full text-sm text-gray-600 border border-gray-300 rounded-lg overflow-hidden text-center">
-           <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
-  <tr>
-    <th class="px-4 py-2">Mode</th>
-    <th class="px-4 py-2">Destination</th>
-    <th class="px-4 py-2">Goods</th>
-    <th class="px-4 py-2">CBM</th>
-    <th class="px-4 py-2">Weight/Pieces</th>
-    <th class="px-4 py-2">Rate</th> <!-- ✅ new column -->
-    <th class="px-4 py-2">Cost (USD)</th>
-  </tr>
-</thead>
-<tbody>
-  <tr class="bg-white border-t">
-    <td class="px-4 py-2 font-medium text-blue-600" x-text="mode"></td>
-    <td class="px-4 py-2" x-text="location"></td>
-    <td class="px-4 py-2 capitalize" x-text="goodsType"></td>
-    <td class="px-4 py-2" x-text="cbm ? cbm : '-'"></td>
-    <td class="px-4 py-2" x-text="(weight ? weight+' kg' : (pieces ? pieces+' pcs' : '-'))"></td>
-    <td class="px-4 py-2" x-text="'$'+rate"></td> <!-- ✅ show rate -->
-    <td class="px-4 py-2 font-bold text-green-600">$<span x-text="seaCost || airCost"></span></td>
-  </tr>
-</tbody>
+            <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-2">Mode</th>
+                <th class="px-4 py-2">Destination</th>
+                <th class="px-4 py-2">Goods</th>
+                <th class="px-4 py-2">CBM</th>
+                <th class="px-4 py-2">Weight/Pieces</th>
+                <th class="px-4 py-2">Rate</th>
+                <th class="px-4 py-2">Cost (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="bg-white border-t">
+                <td class="px-4 py-2 font-medium text-blue-600" x-text="mode"></td>
+                <td class="px-4 py-2" x-text="location"></td>
+                <td class="px-4 py-2 capitalize" x-text="goodsType"></td>
+                <td class="px-4 py-2" x-text="cbm ? cbm : '-'"></td>
+                <td class="px-4 py-2" x-text="(weight ? weight+' kg' : (pieces ? pieces+' pcs' : '-'))"></td>
+                <td class="px-4 py-2" x-text="'$'+rate"></td>
+                <td class="px-4 py-2 font-bold text-green-600">$<span x-text="seaCost || airCost"></span></td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </div>
 
     </div>
   </div>
+
+  <!-- Modal (unchanged) -->
   <div x-show="showModal" x-cloak
      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-md px-2">
-  <div class="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 mb-5 mt-5">
-    <h2 class="text-xl font-semibold">Get Started</h2>
-<p class="mb-4 text-sm">Please fill out the form below. Our team will contact you shortly to finalize the details and provide further assistance.</p>
-    <form class="space-y-4" id="contactForm">
-      <div>
-        <label class="block text-sm font-medium">Full Name</label>
-        <input type="text" class="w-full border p-2 rounded" placeholder="John Doe" name="fullName">
-      </div>
-      <div>
-        <label class="block text-sm font-medium">Email</label>
-        <input type="email" class="w-full border p-2 rounded" placeholder="me@gmail.com" name="email">
-      </div>
-      <div>
-        <label class="block text-sm font-medium">Phone Number</label>
-        <input type="number" class="w-full border p-2 rounded" placeholder="02XXXXXXXX" name="phoneNumber">
-      </div>
-      <div>
-        <label class="block text-sm font-medium">Message</label>
-        <textarea class="w-full border p-2 rounded" rows="3" placeholder="Your message" name="message"></textarea>
-      </div>
-      <div class="flex justify-end gap-2">
-        <button type="button" @click="showModal = false" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded" id="submitBtn">Submit</button>
-      </div>
-    </form>
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 mb-5 mt-5">
+      <h2 class="text-xl font-semibold">Get Started</h2>
+      <p class="mb-4 text-sm">Please fill out the form below. Our team will contact you shortly to finalize the details and provide further assistance.</p>
+      <form class="space-y-4" id="contactForm">
+        <div>
+          <label class="block text-sm font-medium">Full Name</label>
+          <input type="text" class="w-full border p-2 rounded" placeholder="John Doe" name="fullName">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Email</label>
+          <input type="email" class="w-full border p-2 rounded" placeholder="me@gmail.com" name="email">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Phone Number</label>
+          <input type="number" class="w-full border p-2 rounded" placeholder="02XXXXXXXX" name="phoneNumber">
+        </div>
+        <div>
+          <label class="block text-sm font-medium">Message</label>
+          <textarea class="w-full border p-2 rounded" rows="3" placeholder="Your message" name="message"></textarea>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" @click="showModal = false" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-blue-900 text-white rounded" id="submitBtn">Submit</button>
+        </div>
+      </form>
+    </div>
   </div>
-</div>
 </section>
-
-
 <script>
   let disclaimerShown = false; // ✅ flag to track if disclaimer has been shown
 
@@ -270,9 +288,11 @@ Benjamin Cargo Logistics is a trusted non-vessel operating common carrier (NVOCC
   e.preventDefault();
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
-
+  Swal.fire({
+    text: "Sending Message",
+    didOpen: () => Swal.showLoading()
+  })
   const formData = new FormData(this);
-   console.log(formData)
   try {
     const response = await fetch('./customers/customer-functions/insert-prospects.php', {
       method: 'POST',

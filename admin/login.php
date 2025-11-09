@@ -13,16 +13,16 @@ session_start();
   <div>
     <label for="email" class="text-white">Email</label>
     <input type="email" placeholder="Enter email" id="email" name="email"  
-           class="bg-gray-100 w-full p-2 border border-gray-300 rounded" required/>
+           class="bg-gray-100 w-full p-3 border border-gray-300 rounded"/>
 </div>
  <div>
    <label for="password" class="text-white">Password</label>
     <input type="password" placeholder="Enter password" id="password" name="password" 
-           class="bg-gray-100 w-full p-2 border border-gray-300 rounded" required/>
+           class="bg-gray-100 w-full p-3 border border-gray-300 rounded"/>
 </div>
 <div>
     <button type="submit" id="submitBtn" 
-            class="w-full bg-gray-800 text-white px-6 py-2 rounded hover:cursor-pointer hover:bg-gray-700">
+            class="w-full bg-gray-800 text-white px-6 py-3 rounded hover:cursor-pointer hover:bg-gray-700">
       Login
     </button>
 </div>

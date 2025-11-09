@@ -20,7 +20,7 @@ if (!isset($_SESSION['casaid'])) {
 </button>
 <header class="backdrop-blur-md md:mx-4 fixed top-0 left-0 md:left-64 right-0 z-30 bg-white/40 shadow-md p-4 md:p-2 flex justify-between items-center md:mt-2 md:rounded-lg">
   <div>
-    <h1 class="text-xl font-semibold">Hello, <span class="text-gray-600"><?php echo $client_name?></span> </h1>
+    <h1 class="text-base lg:text-xl font-semibold">Hello, <span class="text-gray-600"><?php echo $client_name?></span> </h1>
   </div>
   <div class="hidden md:flex gap-2">
     <form method="POST" action="includes/logout.php">

@@ -15,7 +15,7 @@ $role = $_SESSION['role'] ?? '';
     $icons = [
       "Users" => "fa-address-card",
       "Announcement" => "fa-bullhorn",
-      "Shipment" => "fa-truck",
+      "Packing List" => "fa-truck",
       "Customers" => "fa-solid fa-clipboard-user", 
       "Attendance" => "fa-solid fa-clipboard-user", 
       "Finance" => "fa-solid fa-money-bill-1",
@@ -28,9 +28,9 @@ $role = $_SESSION['role'] ?? '';
         ],
         "roles" => ["admin", "manager", "hr", "sales"]
       ],
-         "Shipment" => [
+         "Packing List" => [
         "links" => [
-          "all-shipments.php" => ["text" => "View All Shipments", "roles" => ["admin", "manager", "hr"]],
+          "all-packing-list.php" => ["text" => "Packing List", "roles" => ["admin", "manager", "hr"]],
         ],
         "roles" => ["admin", "manager", "hr", ]
       ],
@@ -71,6 +71,9 @@ $role = $_SESSION['role'] ?? '';
     }
 
     ?>
+     <a href="all-reviews.php" class="text-gray-300  w-full flex items-center gap-3 hover:bg-gray-700 px-4 py-2 rounded transition">
+       <i class="fa-solid fa-user-tie"></i> All Reviews
+     </a>
      <a href="all-prospects.php" class="text-gray-300  w-full flex items-center gap-3 hover:bg-gray-700 px-4 py-2 rounded transition">
        <i class="fa-solid fa-user-tie"></i> All Prospects
      </a>

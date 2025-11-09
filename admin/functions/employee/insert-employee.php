@@ -1,10 +1,9 @@
 <?php
 session_start();
-// $userID = $_SESSION['employee_id'] ?? null;
-// if (!$userID) {
-//     echo json_encode(['success' => false, 'errors' => ['Unauthorized request. Please log in.']]);
-//     exit;
-// }
+if (!isset($_SESSION['employee_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit;
+}
 
 header('Content-Type: application/json');
 error_reporting(0);
