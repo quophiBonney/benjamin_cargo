@@ -133,6 +133,9 @@ $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </td>
 
                 <td class="no-print flex gap-1 py-2 px-4">
+                  <a class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" href="fpdf/shipment-invoice.php?shipment_id=<?= htmlspecialchars($manifest['id']) ?>" target="_blank">
+                                   <i class="fa-solid fa-file-invoice"></i>
+                    </a>
                   <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 hover:cursor-pointer transition edit-btn" data-manifest='<?= htmlspecialchars(json_encode($manifest), ENT_QUOTES) ?>'><i class="fas fa-edit"></i></button>
                   <button class="hover:cursor-pointer bg-red-500 text-white p-2 rounded hover:bg-red-600 transition delete-btn" data-id="<?= htmlspecialchars($manifest['id'] ?? '') ?>"><i class="fa fa-trash" aria-hidden="true"></i></button>
             </td>

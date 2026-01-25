@@ -116,8 +116,9 @@ function formatPhoneNumber($phone) {
 
 function sendArkeselSMS($to, $status, $trackingMessage, $clientName) {
     $apiKey = $_ENV['ARKESEL_TRACKING_API_KEY']; 
+    $url = "www.benjamincargo.com/customers/shipping-details.php";
     $senderId = "BCL";
-    $smsText = "Dear $clientName, your $status - $trackingMessage";
+    $smsText = "Dear $clientName, your $status visit $url to find out more about your package - $trackingMessage";
     $smsText = urlencode($smsText);
     $url = "https://sms.arkesel.com/sms/api?action=send-sms&api_key=$apiKey&to=$to&from=$senderId&sms=$smsText";
 

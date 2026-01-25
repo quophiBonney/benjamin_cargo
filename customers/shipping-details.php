@@ -74,7 +74,7 @@ if (!$records) {
                                    <i class="fa-solid fa-file-invoice"></i>
                     </a>
                                 <button class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600" data-tracking="<?= htmlspecialchars($data['shipping_mark']) ?>" data-eta="<?= htmlspecialchars($data['estimated_time_of_arrival']) ?>" onclick="fetchShipment(this.dataset.tracking, this.dataset.eta)">
-                                    <i class="fa-solid fa-clock"></i> Timeline
+                                    <i class="fa-solid fa-clock"></i> 
                                 </button>
                             </td>
                         </tr>
@@ -143,7 +143,7 @@ async function fetchShipment(trackingNumber, eta) {
             // ✅ Define tracking stages
             const stages = [
                 { key: "shipments received", icon: "📦", label: "Shipments Received" },
-                { key: "shipments in transit", icon: "🚚", label: "Shipments In Transit" },
+                { key: "shipments in transit", icon: "🚢", label: "Shipments In Transit" },
                 { key: "shipments has arrived at the port undergoing clearance", icon: "⚓", label: "Shipments has arrived at the Port undergoing clearance" },
                 { key: "shipments arrived at benjamin cargo logistics warehouse", icon: "🏢", label: "Shipments At Benjamin Cargo & Logistics Warehouse" },
                 { key: "shipments picked up", icon: "✅", label: "Shipments Picked Up" }

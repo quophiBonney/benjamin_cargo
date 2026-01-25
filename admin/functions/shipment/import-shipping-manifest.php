@@ -1,62 +1,181 @@
 <?php
 session_start();
+
+/* =========================
+   AUTH CHECK
+=========================*/
 if (!isset($_SESSION['employee_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    header("Location: login.php");
-    die();
-    exit;
-}
- include_once __DIR__ . '/../../../includes/dbconnection.php'; // DB connection
-
- $allowed_roles = ['admin', 'manager', 'hr'];
-$session_role = strtolower(trim($_SESSION['role'] ?? ''));
-if (!in_array($_SESSION['role'] ?? '', $allowed_roles)) {
     header("Location: login.php");
     exit;
 }
 
-if (isset($_FILES['file']['name'])) {
+include_once __DIR__ . '/../../../includes/dbconnection.php';
 
-    $fileName = $_FILES['file']['name'];
-    $fileTmp  = $_FILES['file']['tmp_name'];
-    $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+/* =========================
+   ROLE CHECK
+=========================*/
+$allowed_roles = ['admin', 'manager', 'hr'];
+$role = strtolower(trim($_SESSION['role'] ?? ''));
 
-    // Function to check duplicates
-    function isDuplicate($dbh, $customer_id, $entry_date) {
-        $check = $dbh->prepare("SELECT COUNT(*) FROM shipping_manifest WHERE customer_id = ? AND entry_date = ?");
-        $check->execute([$customer_id, $entry_date]);
-        return $check->fetchColumn() > 0;
+if (!in_array($role, $allowed_roles)) {
+    header("Location: login.php");
+    exit;
+}
+
+/* =========================
+   FILE CHECK
+=========================*/
+if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+    die("No file uploaded.");
+}
+
+$fileTmp  = $_FILES['file']['tmp_name'];
+$fileName = $_FILES['file']['name'];
+$ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+$inserted = 0;
+$noMatch  = 0;
+
+/* =========================
+   XLSX IMPORT (preserve displayed values)
+   We use getFormattedValue() for date/display strings so
+   the inserted text matches what Excel shows (e.g. 3/11/2025).
+=========================*/
+if ($ext === 'xlsx') {
+
+    require __DIR__ . '/../../../vendor/autoload.php';
+
+    $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+$reader->setReadDataOnly(true);
+$spreadsheet = $reader->load($fileTmp);
+$sheet = $spreadsheet->getActiveSheet();
+    $highestRow = $sheet->getHighestRow();
+
+    // Start from row 2 (skip header)
+    for ($row = 2; $row <= $highestRow; $row++) {
+
+        $receipt_number = trim((string)$sheet->getCell('A' . $row)->getFormattedValue());
+        $shipping_mark  = trim((string)$sheet->getCell('B' . $row)->getFormattedValue());
+        $entry_date     = trim((string)$sheet->getCell('C' . $row)->getFormattedValue());
+
+        // Other fields - keep as displayed text (safe)
+        $package_name        = trim((string)$sheet->getCell('D' . $row)->getFormattedValue());
+        $number_of_pieces    = trim((string)$sheet->getCell('E' . $row)->getFormattedValue());
+        $volume_cbm          = trim((string)$sheet->getCell('F' . $row)->getFormattedValue());
+        $weight              = trim((string)$sheet->getCell('G' . $row)->getFormattedValue());
+        $rate                = trim((string)$sheet->getCell('H' . $row)->getFormattedValue());
+        $express_tracking_no = trim((string)$sheet->getCell('I' . $row)->getFormattedValue());
+
+        $loading_date   = trim((string)$sheet->getCell('J' . $row)->getFormattedValue());
+        $departure_date = trim((string)$sheet->getCell('K' . $row)->getFormattedValue());
+        $eta            = trim((string)$sheet->getCell('L' . $row)->getFormattedValue());
+        $eto            = trim((string)$sheet->getCell('M' . $row)->getFormattedValue());
+
+        $supplier_number = trim((string)$sheet->getCell('N' . $row)->getFormattedValue());
+        $note            = trim((string)$sheet->getCell('O' . $row)->getFormattedValue());
+
+        // If receipt_number or shipping_mark is empty, skip row (optional)
+        if ($receipt_number === '' && $shipping_mark === '') {
+            continue;
+        }
+
+        // Lookup customer by shipping_mark (exact match)
+        $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
+        $stmt->execute([$shipping_mark]);
+        $customer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$customer) {
+            $noMatch++;
+            continue;
+        }
+
+        // Insert into shipping_manifest - dates are stored as TEXT exactly as provided
+        $insert = $dbh->prepare("
+            INSERT INTO shipping_manifest (
+                customer_id, receipt_number, shipping_mark, entry_date,
+                package_name, number_of_pieces, volume_cbm, weight, rate,
+                express_tracking_no, loading_date, departure_date,
+                estimated_time_of_arrival, estimated_time_of_offloading,
+                supplier_number, note
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $insert->execute([
+            $customer['customer_id'],
+            $receipt_number,
+            $customer['code'],
+            $entry_date,
+            $package_name,
+            $number_of_pieces,
+            $volume_cbm,
+            $weight,
+            $rate,
+            $express_tracking_no,
+            $loading_date,
+            $departure_date,
+            $eta,
+            $eto,
+            $supplier_number,
+            $note
+        ]);
+
+        $manifestId = $dbh->lastInsertId();
+
+        if ($manifestId) {
+            $track = $dbh->prepare("
+                INSERT INTO tracking_history
+                (shipping_manifest_id, status, tracking_message)
+                VALUES (?, ?, ?)
+            ");
+            $track->execute([
+                $manifestId,
+                'shipments received',
+                'Shipments have been received'
+            ]);
+        }
+
+        $inserted++;
     }
 
-    $inserted = 0;
-    $skipped = 0;
-    $noMatch = 0;
+    echo "XLSX import done. Inserted: $inserted | No customer match: $noMatch";
+}
 
-    // Excel import
-    if ($ext === 'xlsx') {
-        require  __DIR__ . '/../../../vendor/autoload.php';
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($fileTmp);
-        $sheetData = $spreadsheet->getActiveSheet()->toArray();
-        unset($sheetData[0]); // remove header row
+/* =========================
+   CSV IMPORT (treat everything as text exactly as appears)
+=========================*/
+elseif ($ext === 'csv') {
 
-        foreach ($sheetData as $row) {
-            $receipt_number      = trim($row[0]);
-            $shipping_mark       = trim($row[1]);
-            $entry_date          = date('Y-m-d', strtotime($row[2]));
-            $package_name        = trim($row[3]);
-            $number_of_pieces    = (int)$row[4];
-            $volume_cbm          = (float)$row[5];
-			$weight              = (float)$row[6];
-            $rate                = (float)$row[7];
-            $express_tracking_no = trim($row[8]);
-            $loading_date        = date('Y-m-d', strtotime($row[9]));
-            $departure_date      = date('Y-m-d', strtotime($row[10]));;
-            $eta                 = date('Y-m-d', strtotime($row[11]));
-            $eto                 = date('Y-m-d', strtotime($row[12]));
-            $supplier_number     = trim($row[13]);
-            $note                = trim($row[14]);
+    if (($handle = fopen($fileTmp, 'r')) !== false) {
 
-            // Lookup customer by code
+        // read header (if present)
+        $hdr = fgetcsv($handle);
+
+        while (($row = fgetcsv($handle, 0, ',')) !== false) {
+
+            // Use null coalescing to prevent undefined offsets
+            $receipt_number      = trim((string)($row[0] ?? ''));
+            $shipping_mark       = trim((string)($row[1] ?? ''));
+            $entry_date          = trim((string)($row[2] ?? ''));
+
+            $package_name        = trim((string)($row[3] ?? ''));
+            $number_of_pieces    = trim((string)($row[4] ?? ''));
+            $volume_cbm          = trim((string)($row[5] ?? ''));
+            $weight              = trim((string)($row[6] ?? ''));
+            $rate                = trim((string)($row[7] ?? ''));
+            $express_tracking_no = trim((string)($row[8] ?? ''));
+
+            $loading_date   = trim((string)($row[9]  ?? ''));
+            $departure_date = trim((string)($row[10] ?? ''));
+            $eta            = trim((string)($row[11] ?? ''));
+            $eto            = trim((string)($row[12] ?? ''));
+
+            $supplier_number = trim((string)($row[13] ?? ''));
+            $note            = trim((string)($row[14] ?? ''));
+
+            if ($receipt_number === '' && $shipping_mark === '') {
+                continue;
+            }
+
             $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
             $stmt->execute([$shipping_mark]);
             $customer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -66,111 +185,60 @@ if (isset($_FILES['file']['name'])) {
                 continue;
             }
 
-            $customer_id = $customer['customer_id'];
-            $shipping_mark = $customer['code']; // take shipping_mark from customers table
+            $insert = $dbh->prepare("
+                INSERT INTO shipping_manifest (
+                    customer_id, receipt_number, shipping_mark, entry_date,
+                    package_name, number_of_pieces, volume_cbm, weight, rate,
+                    express_tracking_no, loading_date, departure_date,
+                    estimated_time_of_arrival, estimated_time_of_offloading,
+                    supplier_number, note
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
 
-            if (!isDuplicate($dbh, $customer_id, $entry_date)) {
-                $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-    (customer_id, receipt_number, shipping_mark, entry_date, package_name, number_of_pieces,
-     volume_cbm, weight, rate, express_tracking_no, loading_date, departure_date,
-     estimated_time_of_arrival, estimated_time_of_offloading, supplier_number, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $insert->execute([
+                $customer['customer_id'],
+                $receipt_number,
+                $customer['code'],
+                $entry_date,
+                $package_name,
+                $number_of_pieces,
+                $volume_cbm,
+                $weight,
+                $rate,
+                $express_tracking_no,
+                $loading_date,
+                $departure_date,
+                $eta,
+                $eto,
+                $supplier_number,
+                $note
+            ]);
 
-                $stmt->execute([
-                    $customer_id, $receipt_number, $shipping_mark, $entry_date, $package_name,
-                    $number_of_pieces, $volume_cbm, $weight, $rate, $express_tracking_no, $loading_date,
-                    $departure_date, $eta, $eto, $supplier_number, $note
+            $manifestId = $dbh->lastInsertId();
+
+            if ($manifestId) {
+                $track = $dbh->prepare("
+                    INSERT INTO tracking_history
+                    (shipping_manifest_id, status, tracking_message)
+                    VALUES (?, ?, ?)
+                ");
+                $track->execute([
+                    $manifestId,
+                    'shipments received',
+                    'Shipments have been received'
                 ]);
-                $manifestId = $dbh->lastInsertId();
-
-if ($manifestId) {
-    $trackStmt = $dbh->prepare("
-        INSERT INTO tracking_history (shipping_manifest_id, status, tracking_message) 
-        VALUES (?, ?, ?)
-    ");
-    $trackStmt->execute([
-        $manifestId,                       // ✅ valid FK reference
-        'shipments received',              // default
-        'Shipments have been received'     // message
-    ]);
-}
-                $inserted++;
-            } else {
-                $skipped++;
             }
+
+            $inserted++;
         }
 
-        echo "Excel import completed. Inserted: $inserted, Skipped: $skipped, No matching customer: $noMatch";
-
-    } 
-    // CSV import
-    elseif ($ext === 'csv') {
-        if (($handle = fopen($fileTmp, 'r')) !== false) {
-            fgetcsv($handle); // skip header row
-
-            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-            $receipt_number      = trim($row[0]);
-            $shipping_mark       = trim($row[1]);
-            $entry_date          = date('Y-m-d', strtotime($row[2]));
-            $package_name        = trim($row[3]);
-            $number_of_pieces    = (int)$row[4];
-            $volume_cbm          = (float)$row[5];
-			$weight              = (float)$row[6];
-            $rate                = (float)$row[7];
-            $express_tracking_no = trim($row[8]);
-            $loading_date        = date('Y-m-d', strtotime($row[9]));
-            $departure_date      = date('Y-m-d', strtotime($row[10]));;
-            $eta                 = date('Y-m-d', strtotime($row[11]));
-            $eto                 = date('Y-m-d', strtotime($row[12]));
-            $supplier_number     = trim($row[13]);
-            $note                = trim($row[14]);
-                $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
-                $stmt->execute([$shipping_mark]);
-                $customer = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if (!$customer) {
-                    $noMatch++;
-                    continue;
-                }
-
-                $customer_id = $customer['customer_id'];
-                $shipping_mark = $customer['code'];
-
-                if (!isDuplicate($dbh, $customer_id, $entry_date)) {
-                   $stmt = $dbh->prepare("INSERT INTO shipping_manifest
-    (customer_id, receipt_number, shipping_mark, entry_date, package_name, number_of_pieces,
-     volume_cbm, weight, rate, express_tracking_no, loading_date, departure_date,
-     estimated_time_of_arrival, estimated_time_of_offloading, supplier_number, note)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-                    $stmt->execute([
-                        $customer_id, $receipt_number, $shipping_mark, $entry_date, $package_name,
-                        $number_of_pieces, $volume_cbm, $weight, $rate, $express_tracking_no, $loading_date,
-                        $departure_date, $eta, $eto, $supplier_number, $note
-                    ]);
-               $trackStmt = $dbh->prepare("
-        INSERT INTO tracking_history (shipping_manifest_id, status, tracking_message) 
-        VALUES (?, ?, ?)
-    ");
-    $trackStmt->execute([
-        $shipping_mark,  // <- your chosen reference ID
-        'shipments received',
-        'shipments has been received'
-    ]);
-                    $inserted++;
-                } else {
-                    $skipped++;
-                }
-            }
-            fclose($handle);
-            echo "CSV import completed. Inserted: $inserted, Skipped: $skipped, No matching customer: $noMatch";
-        }
-    } 
-    else {
-        echo "Invalid file format. Only CSV or XLSX allowed.";
+        fclose($handle);
+        echo "CSV import done. Inserted: $inserted | No customer match: $noMatch";
+    } else {
+        die("Unable to open CSV file.");
     }
-
-} else {
-    echo "No file uploaded.";
 }
-?>
+
+else {
+    die("Invalid file format. Only CSV or XLSX allowed.");
+}

@@ -1,34 +1,61 @@
 <?php
+session_start();
 require('../fpdf/fpdf.php');
 include_once __DIR__ . '/../../includes/dbconnection.php';
 
-// ✅ Validate customer_id
-if (!isset($_GET['customer_id']) || !is_numeric($_GET['customer_id'])) {
-    die('Invalid customer ID.');
+// ✅ Check if admin/employee is logged in
+$is_employee = isset($_SESSION['employee_id']);
+$shipment_id = $_GET['shipment_id'] ?? null;
+$customer_id = $_GET['customer_id'] ?? null;
+
+if ($shipment_id) {
+    // Fetch specific shipment
+    $query = "SELECT s.customer_id, s.entry_date, s.shipping_mark, s.package_name, s.receipt_number,
+                     s.loading_date, s.number_of_pieces, s.volume_cbm, s.weight, s.rate,
+                     s.estimated_time_of_arrival, s.estimated_time_of_offloading,
+                     c.client_name
+              FROM shipping_manifest s
+              LEFT JOIN customers c ON s.customer_id = c.customer_id
+              WHERE s.id = :shipment_id";
+    $stmt = $dbh->prepare($query);
+    $stmt->execute([':shipment_id' => $shipment_id]);
+    $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $customer_name = $shipments[0]['client_name'] ?? 'Unknown Customer';
+} elseif ($customer_id && !$is_employee) {
+    // Fetch customer information
+    $customerQuery = "SELECT client_name FROM customers WHERE customer_id = :customer_id";
+    $customerStmt = $dbh->prepare($customerQuery);
+    $customerStmt->execute([':customer_id' => $customer_id]);
+    $customer = $customerStmt->fetch(PDO::FETCH_ASSOC);
+    $customer_name = $customer ? $customer['client_name'] : 'Unknown Customer';
+    // Fetch customer shipments
+    $query = "SELECT customer_id, entry_date, shipping_mark, package_name, receipt_number,
+                     loading_date, number_of_pieces, volume_cbm, weight, rate,
+                     estimated_time_of_arrival, estimated_time_of_offloading
+              FROM shipping_manifest
+              WHERE customer_id = :customer_id
+              ORDER BY entry_date DESC";
+    $stmt = $dbh->prepare($query);
+    $stmt->execute([':customer_id' => $customer_id]);
+    $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // For admin/employee, fetch all shipments with customer info
+    $customer_name = 'Admin Generated Invoice';
+    $query = "SELECT s.entry_date, s.shipping_mark, s.package_name, s.receipt_number,
+                     s.loading_date, s.number_of_pieces, s.volume_cbm, s.weight, s.rate,
+                     s.estimated_time_of_arrival, s.estimated_time_of_offloading,
+                     c.client_name
+              FROM shipping_manifest s
+              LEFT JOIN customers c ON s.customer_id = c.customer_id
+              ORDER BY s.entry_date DESC";
+    $stmt = $dbh->prepare($query);
+    $stmt->execute();
+    $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-$customer_id = (int)$_GET['customer_id'];
-
-// ✅ Fetch customer information
-$customerQuery = "SELECT client_name FROM customers WHERE customer_id = :customer_id";
-$customerStmt = $dbh->prepare($customerQuery);
-$customerStmt->execute([':customer_id' => $customer_id]);
-$customer = $customerStmt->fetch(PDO::FETCH_ASSOC);
-$customer_name = $customer ? $customer['client_name'] : 'Unknown Customer';
-
-// ✅ Fetch customer shipments
-$query = "SELECT customer_id, entry_date, shipping_mark, package_name, receipt_number, 
-                 loading_date, number_of_pieces, volume_cbm, weight, rate,
-                 estimated_time_of_arrival, estimated_time_of_offloading
-          FROM shipping_manifest 
-          WHERE customer_id = :customer_id
-          ORDER BY entry_date DESC";
-$stmt = $dbh->prepare($query);
-$stmt->execute([':customer_id' => $customer_id]);
-$shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $shipping_mark = $shipments[0]['shipping_mark'] ?? 'N/A';
 if (!$shipments) {
-    die('No shipments found for this customer.');
+    die('No shipments found.');
 }
 
 class InvoicePDF extends FPDF {
@@ -111,17 +138,16 @@ function Header() {
         $this->Ln(5);
     }
 
-    function ShipmentTable($shipments) {
+    function ShipmentTable($shipments, $is_employee) {
         $this->SetFont('Arial', 'B', 10);
         $this->SetFillColor(230, 230, 230);
-
         // ✅ Table Headers
-        $this->Cell(50, 8, 'Description', 1, 0, 'C', true);
-        $this->Cell(20, 8, 'Pieces', 1, 0, 'C', true);
-        $this->Cell(25, 8, 'CBM', 1, 0, 'C', true);
-        $this->Cell(25, 8, 'Weight', 1, 0, 'C', true);
-        $this->Cell(25, 8, 'Rate ($)', 1, 0, 'C', true);
-        $this->Cell(45, 8, 'Loading / ETA / Offload', 1, 1, 'C', true);
+        $this->Cell(65, 8, 'Package', 1, 0, 'C', true);
+        $this->Cell(15, 8, 'Pieces', 1, 0, 'C', true);
+        $this->Cell(20, 8, 'CBM', 1, 0, 'C', true);
+        $this->Cell(20, 8, 'Weight', 1, 0, 'C', true);
+        $this->Cell(20, 8, 'Rate ($)', 1, 0, 'C', true);
+        $this->Cell(55, 8, 'Loading / ETA / Offload', 1, 1, 'C', true);
 
         $this->SetFont('Arial', '', 9);
         $totalPrice = 0;
@@ -135,17 +161,15 @@ function Header() {
             $loading = date('d/m/y', strtotime($s['loading_date']));
             $eta = date('d/m/y', strtotime($s['estimated_time_of_arrival']));
             $offload = date('d/m/y', strtotime($s['estimated_time_of_offloading']));
-            
+
             // Combine dates into one line
             $dates = "$loading / $eta / $offload";
-
-            $this->Cell(50, 8, $desc, 1, 0, 'L');
-            $this->Cell(20, 8, $pieces, 1, 0, 'C');
-            $this->Cell(25, 8, number_format($cbm, 2), 1, 0, 'C');
-            $this->Cell(25, 8, number_format($weight, 2), 1, 0, 'C');
-            $this->Cell(25, 8, '$' . number_format($rate, 2), 1, 0, 'C');
-            $this->Cell(45, 8, $dates, 1, 1, 'C');
-
+            $this->Cell(65, 8, $desc, 1, 0, 'L');
+            $this->Cell(15, 8, $pieces, 1, 0, 'C');
+            $this->Cell(20, 8, number_format($cbm, 2), 1, 0, 'C');
+            $this->Cell(20, 8, number_format($weight, 2), 1, 0, 'C');
+            $this->Cell(20, 8, '$' . number_format($rate, 2), 1, 0, 'C');
+            $this->Cell(55, 8, $dates, 1, 1, 'C');
             $totalPrice += $rate;
         }
 
@@ -171,7 +195,8 @@ function Header() {
 $pdf = new InvoicePDF();
 $pdf->AddPage();
 $pdf->InvoiceHeader($customer_name, $shipping_mark);
-$pdf->ShipmentTable($shipments);
-$pdf->Output('I', 'Invoice_Customer_' . $customer_id . '.pdf');
+$pdf->ShipmentTable($shipments, $customer_name, $is_employee);
+$filename = $is_employee ? 'Invoice_Admin_' . date('YmdHis') . '.pdf' : 'Invoice_Customer_' . ($customer_id ?? 'Unknown') . '.pdf';
+$pdf->Output('I', $filename);
 exit;
 ?>
