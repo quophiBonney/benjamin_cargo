@@ -37,49 +37,54 @@ $inserted = 0;
 $noMatch  = 0;
 
 /* =========================
-   XLSX IMPORT (preserve displayed values)
-   We use getFormattedValue() for date/display strings so
-   the inserted text matches what Excel shows (e.g. 3/11/2025).
+   HELPERS
+=========================*/
+function rawCell($sheet, $cell) {
+    return trim((string)$sheet->getCell($cell)->getValue());
+}
+
+function displayCell($sheet, $cell) {
+    return trim((string)$sheet->getCell($cell)->getFormattedValue());
+}
+
+/* =========================
+   XLSX IMPORT
 =========================*/
 if ($ext === 'xlsx') {
 
     require __DIR__ . '/../../../vendor/autoload.php';
 
     $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
-$reader->setReadDataOnly(true);
-$spreadsheet = $reader->load($fileTmp);
-$sheet = $spreadsheet->getActiveSheet();
+    $spreadsheet = $reader->load($fileTmp);
+    $sheet = $spreadsheet->getActiveSheet();
     $highestRow = $sheet->getHighestRow();
 
-    // Start from row 2 (skip header)
     for ($row = 2; $row <= $highestRow; $row++) {
 
-        $receipt_number = trim((string)$sheet->getCell('A' . $row)->getFormattedValue());
-        $shipping_mark  = trim((string)$sheet->getCell('B' . $row)->getFormattedValue());
-        $entry_date     = trim((string)$sheet->getCell('C' . $row)->getFormattedValue());
+        // 🔐 IDENTIFIERS (RAW — NO FORMATTING)
+        $receipt_number      = rawCell($sheet, 'A' . $row);
+        $shipping_mark       = rawCell($sheet, 'B' . $row);
+        $express_tracking_no = rawCell($sheet, 'I' . $row);
+        $supplier_number     = rawCell($sheet, 'N' . $row);
 
-        // Other fields - keep as displayed text (safe)
-        $package_name        = trim((string)$sheet->getCell('D' . $row)->getFormattedValue());
-        $number_of_pieces    = trim((string)$sheet->getCell('E' . $row)->getFormattedValue());
-        $volume_cbm          = trim((string)$sheet->getCell('F' . $row)->getFormattedValue());
-        $weight              = trim((string)$sheet->getCell('G' . $row)->getFormattedValue());
-        $rate                = trim((string)$sheet->getCell('H' . $row)->getFormattedValue());
-        $express_tracking_no = trim((string)$sheet->getCell('I' . $row)->getFormattedValue());
+        // 📅 DISPLAY FIELDS (AS SHOWN IN EXCEL)
+        $entry_date          = displayCell($sheet, 'C' . $row);
+        $package_name        = displayCell($sheet, 'D' . $row);
+        $number_of_pieces    = displayCell($sheet, 'E' . $row);
+        $volume_cbm          = displayCell($sheet, 'F' . $row);
+        $weight              = displayCell($sheet, 'G' . $row);
+        $rate                = displayCell($sheet, 'H' . $row);
 
-        $loading_date   = trim((string)$sheet->getCell('J' . $row)->getFormattedValue());
-        $departure_date = trim((string)$sheet->getCell('K' . $row)->getFormattedValue());
-        $eta            = trim((string)$sheet->getCell('L' . $row)->getFormattedValue());
-        $eto            = trim((string)$sheet->getCell('M' . $row)->getFormattedValue());
+        $loading_date        = displayCell($sheet, 'J' . $row);
+        $departure_date      = displayCell($sheet, 'K' . $row);
+        $eta                 = displayCell($sheet, 'L' . $row);
+        $eto                 = displayCell($sheet, 'M' . $row);
 
-        $supplier_number = trim((string)$sheet->getCell('N' . $row)->getFormattedValue());
-        $note            = trim((string)$sheet->getCell('O' . $row)->getFormattedValue());
-
-        // If receipt_number or shipping_mark is empty, skip row (optional)
         if ($receipt_number === '' && $shipping_mark === '') {
             continue;
         }
 
-        // Lookup customer by shipping_mark (exact match)
+        // 🔍 CUSTOMER LOOKUP
         $stmt = $dbh->prepare("SELECT customer_id, code FROM customers WHERE code = ?");
         $stmt->execute([$shipping_mark]);
         $customer = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -89,15 +94,14 @@ $sheet = $spreadsheet->getActiveSheet();
             continue;
         }
 
-        // Insert into shipping_manifest - dates are stored as TEXT exactly as provided
+        // 💾 INSERT
         $insert = $dbh->prepare("
             INSERT INTO shipping_manifest (
                 customer_id, receipt_number, shipping_mark, entry_date,
                 package_name, number_of_pieces, volume_cbm, weight, rate,
                 express_tracking_no, loading_date, departure_date,
-                estimated_time_of_arrival, estimated_time_of_offloading,
-                supplier_number, note
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                estimated_time_of_arrival, estimated_time_of_offloading
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $insert->execute([
@@ -115,20 +119,16 @@ $sheet = $spreadsheet->getActiveSheet();
             $departure_date,
             $eta,
             $eto,
-            $supplier_number,
-            $note
         ]);
 
-        $manifestId = $dbh->lastInsertId();
-
-        if ($manifestId) {
+        if ($dbh->lastInsertId()) {
             $track = $dbh->prepare("
                 INSERT INTO tracking_history
                 (shipping_manifest_id, status, tracking_message)
                 VALUES (?, ?, ?)
             ");
             $track->execute([
-                $manifestId,
+                $dbh->lastInsertId(),
                 'shipments received',
                 'Shipments have been received'
             ]);
@@ -137,40 +137,33 @@ $sheet = $spreadsheet->getActiveSheet();
         $inserted++;
     }
 
-    echo "XLSX import done. Inserted: $inserted | No customer match: $noMatch";
+    echo "XLSX import complete. Inserted: $inserted | No match: $noMatch";
 }
 
 /* =========================
-   CSV IMPORT (treat everything as text exactly as appears)
+   CSV IMPORT
 =========================*/
 elseif ($ext === 'csv') {
 
     if (($handle = fopen($fileTmp, 'r')) !== false) {
 
-        // read header (if present)
-        $hdr = fgetcsv($handle);
+        fgetcsv($handle); // skip header
 
         while (($row = fgetcsv($handle, 0, ',')) !== false) {
 
-            // Use null coalescing to prevent undefined offsets
             $receipt_number      = trim((string)($row[0] ?? ''));
             $shipping_mark       = trim((string)($row[1] ?? ''));
             $entry_date          = trim((string)($row[2] ?? ''));
-
             $package_name        = trim((string)($row[3] ?? ''));
             $number_of_pieces    = trim((string)($row[4] ?? ''));
             $volume_cbm          = trim((string)($row[5] ?? ''));
             $weight              = trim((string)($row[6] ?? ''));
             $rate                = trim((string)($row[7] ?? ''));
             $express_tracking_no = trim((string)($row[8] ?? ''));
-
-            $loading_date   = trim((string)($row[9]  ?? ''));
-            $departure_date = trim((string)($row[10] ?? ''));
-            $eta            = trim((string)($row[11] ?? ''));
-            $eto            = trim((string)($row[12] ?? ''));
-
-            $supplier_number = trim((string)($row[13] ?? ''));
-            $note            = trim((string)($row[14] ?? ''));
+            $loading_date        = trim((string)($row[9] ?? ''));
+            $departure_date      = trim((string)($row[10] ?? ''));
+            $eta                 = trim((string)($row[11] ?? ''));
+            $eto                 = trim((string)($row[12] ?? ''));
 
             if ($receipt_number === '' && $shipping_mark === '') {
                 continue;
@@ -190,9 +183,8 @@ elseif ($ext === 'csv') {
                     customer_id, receipt_number, shipping_mark, entry_date,
                     package_name, number_of_pieces, volume_cbm, weight, rate,
                     express_tracking_no, loading_date, departure_date,
-                    estimated_time_of_arrival, estimated_time_of_offloading,
-                    supplier_number, note
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    estimated_time_of_arrival, estimated_time_of_offloading
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $insert->execute([
@@ -209,36 +201,18 @@ elseif ($ext === 'csv') {
                 $loading_date,
                 $departure_date,
                 $eta,
-                $eto,
-                $supplier_number,
-                $note
+                $eto
             ]);
-
-            $manifestId = $dbh->lastInsertId();
-
-            if ($manifestId) {
-                $track = $dbh->prepare("
-                    INSERT INTO tracking_history
-                    (shipping_manifest_id, status, tracking_message)
-                    VALUES (?, ?, ?)
-                ");
-                $track->execute([
-                    $manifestId,
-                    'shipments received',
-                    'Shipments have been received'
-                ]);
-            }
 
             $inserted++;
         }
 
         fclose($handle);
-        echo "CSV import done. Inserted: $inserted | No customer match: $noMatch";
-    } else {
-        die("Unable to open CSV file.");
+        echo "CSV import complete. Inserted: $inserted | No match: $noMatch";
     }
 }
 
 else {
     die("Invalid file format. Only CSV or XLSX allowed.");
 }
+?>

@@ -16,6 +16,7 @@ $role = $_SESSION['role'] ?? '';
       "Users" => "fa-address-card",
       "Announcement" => "fa-bullhorn",
       "Packing List" => "fa-truck",
+      "Tracking Numbers" => "fa-boxes-packing",
       "Customers" => "fa-solid fa-clipboard-user", 
       "Attendance" => "fa-solid fa-clipboard-user", 
       "Finance" => "fa-solid fa-money-bill-1",
@@ -33,6 +34,12 @@ $role = $_SESSION['role'] ?? '';
           "all-packing-list.php" => ["text" => "Packing List", "roles" => ["admin", "manager", "hr"]],
         ],
         "roles" => ["admin", "manager", "hr", ]
+      ],
+      "Tracking Numbers" => [
+        "links" => [
+          "all-tracking-numbers.php" => ["text" => "All Tracking Numbers", "roles" => ["admin", "manager", "hr"]],
+        ],
+        "roles" => ["admin", "manager", "hr"]
       ],
        "Users" => [
         "links" => [

@@ -50,6 +50,7 @@
             <option value="">Select</option>
             <option value="Accra">Accra</option>
             <option value="Kumasi">Kumasi</option>
+            <option value="Takoradi">Takoradi</option>
           </select>
         </div>
 
@@ -139,9 +140,9 @@
       cbm = rawCbm; 
 
       // ✅ Determine base rate by goods type + location
-      if(goodsType==='normal') rate = (location==='Kumasi') ? 260 : 240;
-      if(goodsType==='special') rate = (location==='Kumasi') ? 270 : 250;
-      if(goodsType==='battery') rate = (location==='Kumasi') ? 280 : 270;
+      if(goodsType==='normal') rate = (location === 'Kumasi' || location === 'Takoradi') ? 235 : 215;
+      if(goodsType ==='special') rate = (location==='Kumasi' || location === 'Takoradi') ? 245 : 235;
+      if(goodsType ==='battery') rate = (location ==='Kumasi' || location === 'Takoradi') ? 260 : 250;
 
       // ✅ Chargeable CBM is max(rawCbm, ceil(weight/500))
       let chargeableCbm = Math.max(rawCbm, Math.ceil(weight/500));
@@ -149,37 +150,37 @@
     }
 
     // AIR NORMAL
-    if(mode==='Air-Normal'){
-      if(goodsType==='normal'){
-        rate = (location==='Kumasi') ? 22 : 20;
+    if(mode ==='Air-Normal'){
+      if(goodsType ==='normal'){
+        rate = (location ==='Kumasi' || location === 'Takoradi') ? 22 : 20;
         airCost = (weight * rate).toFixed(2);
       }
     }
 
     // AIR EXPRESS
-    if(mode==='Air-Express'){
-      if(goodsType==='normal'){
-        rate = (location==='Kumasi') ? 22 : 20;
+    if(mode ==='Air-Express'){
+      if(goodsType ==='normal'){
+        rate = (location ==='Kumasi' || location ==='Takoradi') ? 27 : 25;
         airCost = (weight * rate).toFixed(2);
       }
-      if(goodsType==='special'){
-        rate = (location==='Kumasi') ? 24 : 22;
+      if(goodsType ==='special'){
+        rate = (location==='Kumasi' || location === 'Takoradi') ? 29 : 27;
         airCost = (weight * rate).toFixed(2);
       }
-      if(goodsType==='battery'){
-        rate = (location==='Kumasi') ? 55 : 50;
+      if(goodsType ==='battery'){
+        rate = (location ==='Kumasi' || location === 'Takoradi') ? 65 : 60;
         airCost = (weight * rate).toFixed(2);
       }
       if(goodsType==='phone'){
-        rate = (location==='Kumasi') ? 30 : 25;
+        rate = (location ==='Kumasi' || location === 'Takoradi') ? 35 : 30;
         airCost = (pieces * rate).toFixed(2);
       }
       if(goodsType==='tablet'){
-        rate = (location==='Kumasi') ? 35 : 30;
+        rate = (location ==='Kumasi' || location === 'Takoradi') ? 45 : 40;
         airCost = (pieces * rate).toFixed(2);
       }
       if(goodsType==='laptop'){
-        rate = (location==='Kumasi') ? 55 : 50;
+        rate = (location ==='Kumasi' || location === 'Takoradi') ? 65 : 60;
         airCost = (pieces * rate).toFixed(2);
       }
     }

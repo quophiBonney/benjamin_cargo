@@ -3,14 +3,16 @@ body {
   font-family: "Poppins", sans-serif;
 }
 .trial-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
     url("../assets/ship1.png");
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
 }
 .about-hero-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
     url("https://images.pexels.com/photos/2144905/pexels-photo-2144905.jpeg");
   background-size: cover;
   background-position: center center;
@@ -25,7 +27,8 @@ body {
   background-attachment: fixed;
 }
 .redefine-bg {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
     url("../assets/warehouse.jpg");
   background-size: cover;
   background-position: center center;
@@ -34,6 +37,16 @@ body {
 .filter-container {
   backdrop-filter: blur(2px);
 }
+
+.tracking-number-bg {
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url("../assets/tracking.jpg");
+  background-size: cover;
+  background-position: bottom center;
+  background-attachment: fixed;
+}
+
 /* Match Google Translate dropdown to Portal button */
 #google_translate_element select,
 #google_translate_element_mobile select {

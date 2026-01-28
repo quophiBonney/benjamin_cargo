@@ -1,5 +1,5 @@
 <footer class="bg-gray-900 p-6 px-4 md:px-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-10 text-white mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-10 text-white mb-10">
     <div class="lg:col-span-2 space-y-2 mt-5">
         <h4 class="font-bold text-xl">About Benjamin Cargo</h3>
         <p class="text-sm">Benjamin Cargo is a leading provider of cargo services in the region. With a
@@ -20,17 +20,24 @@
 </a>
 	</div>
 </div>
-             <div class="space-y-2 mt-5">
-        <h4 class="font-bold text-xl">Accra Office</h3>
+     <div class="space-y-2 mt-5">
+        <h4 class="font-bold text-xl">Accra <br/>Warehouse</h3>
         <p class="text-sm">Spintex, Accra - Ghana</p>
          <p class="text-sm">+233554358735</p>
          <p class="text-sm">+233554358745</p>
             </div>
              <div class="space-y-2 mt-5">
-        <h4 class="font-bold text-xl">Kumasi Office</h3>
+        <h4 class="font-bold text-xl">Kumasi Warehouse</h3>
         <p class="text-sm">Atafoa, Kumasi - Ghana</p>
         <p class="text-sm">+233256120389</p> 
         <p class="text-sm">+233256120390</p>
+
+            </div>
+            <div class="space-y-2 mt-5">
+        <h4 class="font-bold text-xl">Takoradi Warehouse</h3>
+        <p class="text-sm">Anaji Choice Mart, Takoradi</p>
+        <p class="text-sm">+233545161026</p> 
+        <p class="text-sm">+233544767291</p>
 
             </div>
              <div class="flex flex-col mt-5">
