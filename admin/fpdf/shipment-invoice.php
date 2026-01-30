@@ -37,6 +37,7 @@ $customer_name = $customer['client_name'] ?? 'Unknown Customer';
 $stmt = $dbh->prepare(
     "SELECT shipping_mark,
             package_name,
+            express_tracking_no,
             volume_cbm,
             rate,
             loading_date,
@@ -154,12 +155,12 @@ class InvoicePDF extends FPDF {
 
     function InvoiceTable() {
         $shipments = $this->shipments;
-        $widths = [45, 70, 25, 30, 20];
-        $aligns = ['C','L','C','C','C'];
+        $widths = [30, 40, 45, 20, 25, 30];
+        $aligns = ['C','C','L','C','C','C'];
 
         $this->SetFont('Arial','B',10);
         $this->SetFillColor(220,220,220);
-        $headers = ['CODE','ITEM','CBM','UNIT PRICE','AMOUNT'];
+        $headers = ['CODE', 'TRACKING NO.', 'ITEM','CBM','UNIT PRICE','AMOUNT'];
 
         foreach($headers as $i=>$h) $this->Cell($widths[$i],10,$h,1,0,'C',true);
         $this->Ln();
@@ -179,6 +180,7 @@ class InvoicePDF extends FPDF {
 
             $this->TableRow([
                 $s['shipping_mark'],
+                $s['express_tracking_no'],
                 ucwords(strtolower($s['package_name'])),
                 number_format($cbm,3),
                 '$'.number_format($rate,2),

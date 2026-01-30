@@ -42,7 +42,27 @@ if (!$records) {
 <!-- Main Content -->
 <main class="flex-1 md:ml-64 px-4 transition-all">
     <?php include_once 'includes/app-bar.php'; ?>
-    <div class="grid grid-cols-1 space-y-3 mt-32 md:space-x-2 mb-5">
+    <div class="w-full mt-32">
+      <form id="trackingForm" class="w-full">
+        <div class="mt-6 flex justify-center w-full">
+            <input
+            type="text"
+            id="trackingNumber"
+            name="tracking_number"
+            placeholder="Enter your tracking number"
+            class="w-full p-3 rounded-l-lg border-2 border-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-black"
+            required
+            />
+            <button
+            type="submit"
+            class="bg-indigo-900 hover:bg-indigo-800 text-white px-6 py-4 rounded-r-lg font-semibold transition duration-300"
+            >
+            Track Now
+            </button>
+        </div>
+      </form>
+</div>
+    <div class="grid grid-cols-1 space-y-3 mt-10 md:space-x-2 mb-5">
         <!-- Shipping Table -->
         <div class="overflow-x-auto bg-white rounded">
             <table class="w-full text-sm text-left text-gray-700 border border-gray-200 overflow-hidden">

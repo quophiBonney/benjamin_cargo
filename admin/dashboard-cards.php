@@ -29,7 +29,7 @@ $totalProspects = $prospectResult['total_prospects'];
 
 <div class="mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
   <div class="bg-gray-700 text-white p-4 rounded shadow">
-    <h2 class="text-md mb-4">Total Parking List</h2>
+    <h2 class="text-md mb-4">Total Packing List</h2>
     <h3 class="text-2xl font-bold"><?php echo $totalShipments; ?></h3>
   </div>
   <div class="bg-orange-500 text-white p-4 rounded shadow">
