@@ -23,7 +23,6 @@
       <div class="hidden md:flex gap-6 text-sm font-medium items-center">
         <a href="index.php" class="hover:text-blue-700 transition duration-300">Home</a>
         <a href="about-us.php" class="block hover:text-blue-700 transition duration-300">About Us</a>
-         <a href="tracker.php" class="block hover:text-blue-700 transition duration-300">Tracker</a>
         <a href="contact.php" class="block hover:text-blue-700 transition duration-300">Contact</a>
         <a href="customers/login.php" target="_blank" class="bg-indigo-900 rounded text-white p-3 block transition duration-300">Portal</a>
 

@@ -520,11 +520,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <td class="py-2 px-4">${escapeHtml(m.estimated_time_of_arrival)}</td>
         <td class="py-2 px-4"><span class="capitalize">${escapeHtml(m.status)}</span></td>
         <td class="no-print flex gap-1 py-2 px-4">
-          <a class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" 
+          <a class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
              href="fpdf/shipment-invoice.php?customer_id=${encodeURIComponent(m.customer_id)}" target="_blank">
              <i class="fa-solid fa-file-invoice"></i>
           </a>
           <button class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600 edit-btn" data-manifest='${escapeHtml(JSON.stringify(m.__raw))}'><i class="fas fa-edit"></i></button>
+          <a class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" download="invoice.pdf"
+             href="fpdf/shipment-invoice.php?customer_id=${encodeURIComponent(m.customer_id)}">
+             <i class="fa-solid fa-download"></i>
+          </a>
           <button class="bg-red-500 text-white p-2 rounded hover:bg-red-600 delete-btn" data-id="${escapeHtml(m.id)}"><i class="fa fa-trash" aria-hidden="true"></i></button>
         </td>
       `;

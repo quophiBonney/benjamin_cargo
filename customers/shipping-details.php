@@ -49,7 +49,7 @@ if (!$records) {
             type="text"
             id="trackingNumber"
             name="tracking_number"
-            placeholder="Enter your tracking number"
+            placeholder="Enter your express tracking number"
             class="w-full p-3 rounded-l-lg border-2 border-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 text-black"
             required
             />
@@ -238,6 +238,58 @@ document.addEventListener("DOMContentLoaded", () => {
         const eta = firstRow.querySelector("button[data-tracking]").dataset.eta;
         fetchShipment(trackingNumber, eta);
     }
+
+    // Handle tracking form submission
+    const trackingForm = document.getElementById('trackingForm');
+    trackingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const trackingNumber = document.getElementById('trackingNumber').value.trim();
+
+        if (!trackingNumber) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Input Required',
+                text: 'Please enter an express tracking number.',
+                confirmButtonColor: '#031186ff'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch('../components/fetch-entry-date.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ tracking_number: trackingNumber })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                const entryDate = new Date(result.entry_date).toLocaleDateString();
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Goods Received At Warehouse',
+                    text: `Date Received for ${trackingNumber} is: ${entryDate}`,
+                    confirmButtonColor: '#031186ff'
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No Record Found',
+                    text: result.message,
+                    confirmButtonColor: '#031186ff'
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching entry date:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Unexpected Error',
+                text: 'Something went wrong while retrieving the entry date. Please try again later.',
+                confirmButtonColor: '#031186ff'
+            });
+        }
+    });
 });
   // ✅ Review Reminder Notification
 setTimeout(() => {
