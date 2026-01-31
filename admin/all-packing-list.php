@@ -18,32 +18,31 @@ $stmt = $dbh->prepare($query);
 $stmt->execute();
 $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Build containers mapping: prefer import_file, else group by entry_date month-year
+// Helper: convert entry_date to nice day label (e.g. "3rd November 2026")
+function entryDateLabel($entry) {
+    if (!$entry) return '';
+    $ts = strtotime($entry);
+    if ($ts === false) return '';
+    return date('jS F Y', $ts);
+}
+
+// Build containers mapping: prefer import_file per-record, else group by full entry_date (day-month-year)
 $containers = [];
 $containerManifests = [];
 // We'll also dedupe per container using a seen-key set
 $seenPerContainer = [];
 
-try {
-    $importFileCheck = $dbh->prepare("SELECT import_file FROM shipping_manifest WHERE import_file IS NOT NULL AND TRIM(import_file) != '' LIMIT 1");
-    $importFileCheck->execute();
-    $hasImportFile = (bool)$importFileCheck->fetchColumn();
-} catch (Exception $e) {
-    $hasImportFile = false;
-}
-
-// Group and dedupe
+// Group and dedupe per-row (use import_file when present)
 foreach ($shipments as $m) {
-    // choose group key
-    if ($hasImportFile && !empty(trim($m['import_file'] ?? ''))) {
-        $key = trim($m['import_file']);
+    // choose group key per-record
+    $importFileRaw = trim((string)($m['import_file'] ?? ''));
+    if ($importFileRaw !== '') {
+        // Use basename in case path was stored
+        $key = pathinfo($importFileRaw, PATHINFO_BASENAME) ?: $importFileRaw;
     } else {
         $entry = $m['entry_date'] ?? '';
-        if ($entry && strtotime($entry) !== false) {
-            $key = date('F Y', strtotime($entry));
-        } else {
-            $key = 'Unspecified Import';
-        }
+        $label = entryDateLabel($entry);
+        $key = $label !== '' ? $label : 'Unspecified Import';
     }
 
     if (!array_key_exists($key, $containerManifests)) {
@@ -58,8 +57,8 @@ foreach ($shipments as $m) {
     $mark = trim((string)($m['shipping_mark'] ?? ''));
     $entry = trim((string)($m['entry_date'] ?? ''));
     $uniqueKey = $receipt . '||' . $mark . '||' . $entry;
-    if (empty(trim($receipt)) && empty(trim($mark)) && !empty($m['id'])) {
-        // If the main tuple is empty, fall back to id (avoid skipping genuine entries without receipts)
+    if ($uniqueKey === '||' && !empty($m['id'])) {
+        // If receipt and mark and entry_date empty, fallback to id
         $uniqueKey = 'id::' . $m['id'];
     }
 
@@ -72,31 +71,22 @@ foreach ($shipments as $m) {
     }
 }
 
-// Sort containers: most recent first (same logic as before)
-if (!$hasImportFile) {
-    $containerDates = [];
-    foreach ($containerManifests as $label => $rows) {
-        $maxTs = 0;
-        foreach ($rows as $r) {
-            $ts = strtotime($r['entry_date'] ?? '0000-00-00');
-            if ($ts && $ts > $maxTs) $maxTs = $ts;
-        }
-        $containerDates[$label] = $maxTs;
+// Sort containers: most recent first (based on latest entry_date within each container)
+$containerDates = [];
+foreach ($containerManifests as $label => $rows) {
+    $maxTs = 0;
+    foreach ($rows as $r) {
+        $ts = strtotime($r['entry_date'] ?? '');
+        if ($ts && $ts > $maxTs) $maxTs = $ts;
     }
-    usort($containers, function($a, $b) use ($containerDates) {
-        return ($containerDates[$b] ?? 0) <=> ($containerDates[$a] ?? 0);
-    });
-} else {
-    usort($containers, function($a, $b) use ($containerManifests) {
-        $aRows = $containerManifests[$a] ?? [];
-        $bRows = $containerManifests[$b] ?? [];
-        $aMax = 0; $bMax = 0;
-        foreach ($aRows as $r) { $ts = strtotime($r['entry_date'] ?? '0000-00-00'); if ($ts && $ts > $aMax) $aMax = $ts; }
-        foreach ($bRows as $r) { $ts = strtotime($r['entry_date'] ?? '0000-00-00'); if ($ts && $ts > $bMax) $bMax = $ts; }
-        return $bMax <=> $aMax;
-    });
+    // If no entry_date found for all rows, fall back to 0 so they appear last
+    $containerDates[$label] = $maxTs;
 }
+usort($containers, function($a, $b) use ($containerDates) {
+    return ($containerDates[$b] ?? 0) <=> ($containerDates[$a] ?? 0);
+});
 
+// JSON encode for client-side JS
 $containerManifestsJson = json_encode($containerManifests, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $containersJson = json_encode($containers, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 ?>
@@ -785,6 +775,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 })();
+
+// Modal close functions
+window.closeTrackModal = () => {
+  const trackModal = document.getElementById('updateTrackingHistoryModal');
+  if (trackModal) trackModal.classList.add('hidden');
+};
+
+window.closePackingListModal = () => {
+  const packingModal = document.getElementById('updatePackingList');
+  if (packingModal) packingModal.classList.add('hidden');
+};
+
+// Click outside to close modals
+document.getElementById('updateTrackingHistoryModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('updateTrackingHistoryModal')) {
+    closeTrackModal();
+  }
+});
+
+document.getElementById('updatePackingList').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('updatePackingList')) {
+    closePackingListModal();
+  }
+});
 
 </script>
 </body>
