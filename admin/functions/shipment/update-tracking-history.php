@@ -30,16 +30,55 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $status = trim($_POST['status'] ?? '');
 $dateSelected = trim($_POST['dateSelected'] ?? '');
 $trackingMessage = trim($_POST['trackingMessage'] ?? '');
+$containerLabel = trim($_POST['container_label'] ?? '');
 
-if ($status === '' || $dateSelected === '' || $trackingMessage === '') {
+if ($status === '' || $trackingMessage === '') {
     echo json_encode(['success' => false, 'message' => 'Kindly fill all fields']);
     exit;
 }
 
+// Fetch all shipments to build containers
+$query = "SELECT * FROM shipping_manifest ORDER BY id ASC";
+$stmt = $dbh->prepare($query);
+$stmt->execute();
+$allShipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Helper: convert entry_date to nice day label (e.g. "3rd November 2026")
+function entryDateLabel($entry) {
+    if (!$entry) return '';
+    $ts = strtotime($entry);
+    if ($ts === false) return '';
+    return date('jS F Y', $ts);
+}
+
+// Build containers mapping as in all-packing-list.php
+$containerManifests = [];
+foreach ($allShipments as $m) {
+    $importFileRaw = trim((string)($m['import_file'] ?? ''));
+    if ($importFileRaw !== '') {
+        $key = pathinfo($importFileRaw, PATHINFO_BASENAME) ?: $importFileRaw;
+    } else {
+        $entry = $m['entry_date'] ?? '';
+        $label = entryDateLabel($entry);
+        $key = $label !== '' ? $label : 'Unspecified Import';
+    }
+
+    if (!array_key_exists($key, $containerManifests)) {
+        $containerManifests[$key] = [];
+    }
+    $containerManifests[$key][] = $m;
+}
+
 try {
-    $stmt = $dbh->prepare("SELECT id, customer_id FROM shipping_manifest WHERE estimated_time_of_arrival = :dateSelected");
-    $stmt->execute([':dateSelected' => $dateSelected]);
-    $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($containerLabel && isset($containerManifests[$containerLabel])) {
+        // Use container shipments
+        $shipments = $containerManifests[$containerLabel];
+    } else {
+        // Fallback to ETA filter if no container_label
+        $stmt = $dbh->prepare("SELECT id, customer_id FROM shipping_manifest WHERE estimated_time_of_arrival = :dateSelected");
+        $stmt->execute([':dateSelected' => $dateSelected]);
+        $shipments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     if (empty($shipments)) {
         echo json_encode(['success' => false, 'message' => 'No shipments found']);
